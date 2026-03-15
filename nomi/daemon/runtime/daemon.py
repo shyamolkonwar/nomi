@@ -248,6 +248,7 @@ class NomiDaemon(LoggerMixin):
                 symbol_index=self._symbol_index,
                 repo_scanner=self._repo_scanner,
             )
+            self._indexing_scheduler.schedule_full_index()
 
         self._maintenance_scheduler = MaintenanceScheduler(
             storage_dir=self.storage_dir,
