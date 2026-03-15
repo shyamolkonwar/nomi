@@ -101,10 +101,17 @@ Modern AI coding tools repeatedly send large portions of repositories to LLMs, r
 
 ## Installation
 
-### From PyPI (Coming Soon)
+### From PyPI
 
 ```bash
-pip install nomi
+pip install nomi-context
+```
+
+Then use the `nomi` command:
+
+```bash
+nomi init
+nomi start
 ```
 
 ### From Source
