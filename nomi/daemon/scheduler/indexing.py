@@ -82,7 +82,7 @@ class IndexingScheduler(LoggerMixin):
             except queue.Empty:
                 continue
             except Exception as e:
-                self.logger.error("Error processing indexing task", error=str(e))
+                self.logger.error(f"Error processing indexing task: {e}")
 
         self.logger.debug("Worker thread stopped")
 
@@ -101,9 +101,9 @@ class IndexingScheduler(LoggerMixin):
                 file_paths = task.get("file_paths", [])
                 self._execute_incremental_update(file_paths)
             else:
-                self.logger.warning("Unknown task type", task_type=task_type)
+                self.logger.warning(f"Unknown task type: task_type={task_type}")
         except Exception as e:
-            self.logger.error("Task execution failed", task_type=task_type, error=str(e))
+            self.logger.error(f"Task execution failed: task_type={task_type}, error={e}")
 
     def _execute_full_index(self) -> None:
         """Execute a full repository scan and index."""
@@ -117,16 +117,14 @@ class IndexingScheduler(LoggerMixin):
                 result = self.symbol_index.index_files(file_paths)
 
                 self.logger.info(
-                    "Full index complete",
-                    indexed_count=result.indexed_count,
-                    file_count=len(file_paths),
-                    duration_ms=result.duration_ms,
+                    f"Full index complete: indexed_count={result.indexed_count}, "
+                    f"file_count={len(file_paths)}, duration_ms={result.duration_ms}"
                 )
             else:
                 self.logger.info("No files to index")
 
         except Exception as e:
-            self.logger.error("Full index failed", error=str(e))
+            self.logger.error(f"Full index failed: {e}")
             raise
 
     def _execute_incremental_update(self, file_paths: List[str]) -> None:
@@ -135,7 +133,7 @@ class IndexingScheduler(LoggerMixin):
         Args:
             file_paths: List of file paths to update.
         """
-        self.logger.info("Starting incremental update...", file_count=len(file_paths))
+        self.logger.info(f"Starting incremental update: file_count={len(file_paths)}")
 
         try:
             discovered_files = self.repo_scanner.scan_incremental(file_paths)
@@ -145,16 +143,14 @@ class IndexingScheduler(LoggerMixin):
                 result = self.symbol_index.index_files(valid_paths)
 
                 self.logger.info(
-                    "Incremental update complete",
-                    indexed_count=result.indexed_count,
-                    file_count=len(valid_paths),
-                    duration_ms=result.duration_ms,
+                    f"Incremental update complete: indexed_count={result.indexed_count}, "
+                    f"file_count={len(valid_paths)}, duration_ms={result.duration_ms}"
                 )
             else:
                 self.logger.debug("No valid files to update")
 
         except Exception as e:
-            self.logger.error("Incremental update failed", error=str(e))
+            self.logger.error(f"Incremental update failed: {e}")
             raise
 
     def schedule_full_index(self) -> None:
@@ -175,7 +171,7 @@ class IndexingScheduler(LoggerMixin):
 
         task = {"type": "incremental", "file_paths": file_paths}
         self._queue.put(task)
-        self.logger.debug("Incremental update scheduled", file_count=len(file_paths))
+        self.logger.debug(f"Incremental update scheduled: file_count={len(file_paths)}")
 
     def get_queue_size(self) -> int:
         """Get the current number of pending tasks.

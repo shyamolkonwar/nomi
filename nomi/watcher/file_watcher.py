@@ -61,9 +61,8 @@ class FileWatcher(LoggerMixin):
         self._is_watching = False
 
         self.logger.info(
-            "FileWatcher initialized",
-            watch_path=str(self.watch_path),
-            ignore_count=len(self.ignore_patterns),
+            f"FileWatcher initialized: watch_path={self.watch_path}, "
+            f"ignore_count={len(self.ignore_patterns)}"
         )
 
     def start(self) -> None:
@@ -94,7 +93,7 @@ class FileWatcher(LoggerMixin):
             self._observer.start()
             self._is_watching = True
 
-            self.logger.info("FileWatcher started", watch_path=str(self.watch_path))
+            self.logger.info(f"FileWatcher started: watch_path={self.watch_path}")
 
     def stop(self) -> None:
         """Stop watching the filesystem.
@@ -138,7 +137,7 @@ class FileWatcher(LoggerMixin):
         with self._lock:
             if pattern not in self.ignore_patterns:
                 self.ignore_patterns.append(pattern)
-                self.logger.debug("Added ignore pattern", pattern=pattern)
+                self.logger.debug(f"Added ignore pattern: pattern={pattern}")
 
     def remove_ignore_pattern(self, pattern: str) -> bool:
         """Remove an ignore pattern.
@@ -152,7 +151,7 @@ class FileWatcher(LoggerMixin):
         with self._lock:
             if pattern in self.ignore_patterns:
                 self.ignore_patterns.remove(pattern)
-                self.logger.debug("Removed ignore pattern", pattern=pattern)
+                self.logger.debug(f"Removed ignore pattern: pattern={pattern}")
                 return True
             return False
 
@@ -174,20 +173,14 @@ class FileWatcher(LoggerMixin):
             file_path: Path to the changed file.
             change_type: Type of change that occurred.
         """
-        self.logger.debug(
-            "File change detected",
-            file_path=file_path,
-            change_type=change_type.value,
-        )
+        self.logger.debug(f"File change detected: file_path={file_path}, change_type={change_type.value}")
 
         try:
             self.on_file_changed(file_path, change_type)
         except Exception as e:
             self.logger.error(
-                "Error in file change callback",
-                file_path=file_path,
-                change_type=change_type.value,
-                error=str(e),
+                f"Error in file change callback: file_path={file_path}, "
+                f"change_type={change_type.value}, error={e}"
             )
 
     def __enter__(self):

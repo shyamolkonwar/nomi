@@ -77,11 +77,7 @@ class IndexingCoordinator(LoggerMixin):
             file_path: Path to the changed file.
             change_type: Type of change that occurred.
         """
-        self.logger.debug(
-            "File change received",
-            file_path=file_path,
-            change_type=change_type.value,
-        )
+        self.logger.debug(f"File change received: file_path={file_path}, change_type={change_type.value}")
 
         try:
             if change_type == FileChangeType.CREATED:
@@ -93,16 +89,11 @@ class IndexingCoordinator(LoggerMixin):
             elif change_type == FileChangeType.MOVED:
                 self._handle_moved_event(file_path)
             else:
-                self.logger.warning(
-                    "Unknown change type",
-                    change_type=change_type.value,
-                )
+                self.logger.warning(f"Unknown change type: change_type={change_type.value}")
         except Exception as e:
             self.logger.error(
-                "Error handling file change",
-                file_path=file_path,
-                change_type=change_type.value,
-                error=str(e),
+                f"Error handling file change: file_path={file_path}, "
+                f"change_type={change_type.value}, error={e}"
             )
 
     def handle_created(self, file_path: str) -> None:
@@ -113,7 +104,7 @@ class IndexingCoordinator(LoggerMixin):
         Args:
             file_path: Path to the created file.
         """
-        self.logger.debug("Handling file creation", file_path=file_path)
+        self.logger.debug(f"Handling file creation: file_path={file_path}")
         self.batch_processor.add_change(file_path)
 
     def handle_modified(self, file_path: str) -> None:
@@ -124,7 +115,7 @@ class IndexingCoordinator(LoggerMixin):
         Args:
             file_path: Path to the modified file.
         """
-        self.logger.debug("Handling file modification", file_path=file_path)
+        self.logger.debug(f"Handling file modification: file_path={file_path}")
         self.batch_processor.add_change(file_path)
 
     def handle_deleted(self, file_path: str) -> None:
@@ -135,17 +126,13 @@ class IndexingCoordinator(LoggerMixin):
         Args:
             file_path: Path to the deleted file.
         """
-        self.logger.debug("Handling file deletion", file_path=file_path)
+        self.logger.debug(f"Handling file deletion: file_path={file_path}")
 
         try:
             self.symbol_index.remove_file(file_path)
-            self.logger.info("Removed deleted file from index", file_path=file_path)
+            self.logger.info(f"Removed deleted file from index: file_path={file_path}")
         except Exception as e:
-            self.logger.error(
-                "Failed to remove file from index",
-                file_path=file_path,
-                error=str(e),
-            )
+            self.logger.error(f"Failed to remove file from index: file_path={file_path}, error={e}")
 
     def _handle_moved_event(self, src_path: str) -> None:
         """Handle a file move event (internal).
@@ -156,17 +143,13 @@ class IndexingCoordinator(LoggerMixin):
         Args:
             src_path: Original path of the moved file.
         """
-        self.logger.debug("Handling file move", src_path=src_path)
+        self.logger.debug(f"Handling file move: src_path={src_path}")
 
         try:
             self.symbol_index.remove_file(src_path)
-            self.logger.debug("Removed moved file from index", src_path=src_path)
+            self.logger.debug(f"Removed moved file from index: src_path={src_path}")
         except Exception as e:
-            self.logger.error(
-                "Failed to remove moved file from index",
-                src_path=src_path,
-                error=str(e),
-            )
+            self.logger.error(f"Failed to remove moved file from index: src_path={src_path}, error={e}")
 
     def handle_moved(self, src_path: str, dest_path: str) -> None:
         """Handle a file move/rename event.
@@ -177,27 +160,14 @@ class IndexingCoordinator(LoggerMixin):
             src_path: Original path of the moved file.
             dest_path: New path of the moved file.
         """
-        self.logger.debug(
-            "Handling file move",
-            src_path=src_path,
-            dest_path=dest_path,
-        )
+        self.logger.debug(f"Handling file move: src_path={src_path}, dest_path={dest_path}")
 
         try:
             self.symbol_index.remove_file(src_path)
             self.batch_processor.add_change(dest_path)
-            self.logger.info(
-                "Queued moved file for re-indexing",
-                src_path=src_path,
-                dest_path=dest_path,
-            )
+            self.logger.info(f"Queued moved file for re-indexing: src_path={src_path}, dest_path={dest_path}")
         except Exception as e:
-            self.logger.error(
-                "Failed to handle file move",
-                src_path=src_path,
-                dest_path=dest_path,
-                error=str(e),
-            )
+            self.logger.error(f"Failed to handle file move: src_path={src_path}, dest_path={dest_path}, error={e}")
 
     def _process_batch(self, file_paths: list[str]) -> None:
         """Process a batch of file changes.
@@ -211,23 +181,13 @@ class IndexingCoordinator(LoggerMixin):
         if not file_paths:
             return
 
-        self.logger.info(
-            "Processing batch of file changes",
-            file_count=len(file_paths),
-        )
+        self.logger.info(f"Processing batch of file changes: file_count={len(file_paths)}")
 
         try:
             self.symbol_index.index_files(file_paths)
-            self.logger.info(
-                "Batch processing complete",
-                file_count=len(file_paths),
-            )
+            self.logger.info(f"Batch processing complete: file_count={len(file_paths)}")
         except Exception as e:
-            self.logger.error(
-                "Batch processing failed",
-                file_count=len(file_paths),
-                error=str(e),
-            )
+            self.logger.error(f"Batch processing failed: file_count={len(file_paths)}, error={e}")
 
     def __enter__(self):
         """Context manager entry - start the coordinator."""

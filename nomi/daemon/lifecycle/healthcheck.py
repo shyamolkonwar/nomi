@@ -68,10 +68,7 @@ class HealthChecker(LoggerMixin):
         self._last_status: Optional[HealthStatus] = None
 
         self._start_worker()
-        self.logger.info(
-            "HealthChecker initialized",
-            check_interval_seconds=check_interval_seconds,
-        )
+        self.logger.info(f"HealthChecker initialized: check_interval_seconds={check_interval_seconds}")
 
     def _start_worker(self) -> None:
         """Start the background health check worker thread."""
@@ -96,16 +93,15 @@ class HealthChecker(LoggerMixin):
 
                 if not self._last_status.is_healthy:
                     self.logger.warning(
-                        "Health check failed",
-                        database_connected=self._last_status.database_connected,
-                        watcher_active=self._last_status.watcher_active,
-                        api_available=self._last_status.api_available,
+                        f"Health check failed: database_connected={self._last_status.database_connected}, "
+                        f"watcher_active={self._last_status.watcher_active}, "
+                        f"api_available={self._last_status.api_available}"
                     )
                 else:
                     self.logger.debug("Health check passed")
 
             except Exception as e:
-                self.logger.error("Health check error", error=str(e))
+                self.logger.error(f"Health check error: {e}")
 
             self._shutdown_event.wait(timeout=self.check_interval_seconds)
 
@@ -130,7 +126,7 @@ class HealthChecker(LoggerMixin):
                 cursor.fetchone()
             return True
         except sqlite3.Error as e:
-            self.logger.debug("Database connection check failed", error=str(e))
+            self.logger.debug(f"Database connection check failed: {e}")
             return False
 
     def check_file_watcher(self) -> bool:

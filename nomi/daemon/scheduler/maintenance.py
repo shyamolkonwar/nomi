@@ -53,10 +53,7 @@ class MaintenanceScheduler(LoggerMixin):
         self._last_stats_collection: Optional[datetime] = None
 
         self._start_worker()
-        self.logger.info(
-            "MaintenanceScheduler initialized",
-            interval_seconds=interval_seconds,
-        )
+        self.logger.info(f"MaintenanceScheduler initialized: interval_seconds={interval_seconds}")
 
     def _start_worker(self) -> None:
         """Start the background maintenance worker thread."""
@@ -79,7 +76,7 @@ class MaintenanceScheduler(LoggerMixin):
             try:
                 self._run_maintenance_tasks()
             except Exception as e:
-                self.logger.error("Maintenance task failed", error=str(e))
+                self.logger.error(f"Maintenance task failed: {e}")
 
             self._shutdown_event.wait(timeout=self.interval_seconds)
 
@@ -95,7 +92,7 @@ class MaintenanceScheduler(LoggerMixin):
         self.schedule_stats_collection()
 
         duration = time.time() - start_time
-        self.logger.info("Maintenance tasks completed", duration_ms=duration * 1000)
+        self.logger.info(f"Maintenance tasks completed: duration_ms={duration * 1000}")
 
     def schedule_vacuum(self) -> None:
         """Vacuum the SQLite database to reclaim space.
@@ -119,7 +116,7 @@ class MaintenanceScheduler(LoggerMixin):
             self.logger.info("Database vacuum completed")
 
         except sqlite3.Error as e:
-            self.logger.error("Database vacuum failed", error=str(e))
+            self.logger.error(f"Database vacuum failed: {e}")
 
     def schedule_cache_cleanup(self) -> None:
         """Clear expired cache entries.
@@ -133,10 +130,10 @@ class MaintenanceScheduler(LoggerMixin):
             self._context_cache.clear()
 
             self._last_cache_cleanup = datetime.now()
-            self.logger.info("Cache cleanup completed", cleared_count=cleared_count)
+            self.logger.info(f"Cache cleanup completed: cleared_count={cleared_count}")
 
         except Exception as e:
-            self.logger.error("Cache cleanup failed", error=str(e))
+            self.logger.error(f"Cache cleanup failed: {e}")
 
     def schedule_stats_collection(self) -> None:
         """Collect and store system metrics.
@@ -151,13 +148,12 @@ class MaintenanceScheduler(LoggerMixin):
             self._last_stats_collection = datetime.now()
 
             self.logger.info(
-                "Stats collection completed",
-                database_size_bytes=stats.get("database_size_bytes", 0),
-                cache_entries=stats.get("cache_entries", 0),
+                f"Stats collection completed: database_size_bytes={stats.get('database_size_bytes', 0)}, "
+                f"cache_entries={stats.get('cache_entries', 0)}"
             )
 
         except Exception as e:
-            self.logger.error("Stats collection failed", error=str(e))
+            self.logger.error(f"Stats collection failed: {e}")
 
     def _collect_stats(self) -> dict:
         """Collect system statistics.

@@ -82,11 +82,7 @@ class NomiDaemon(LoggerMixin):
         self._api_server: Optional[Any] = None
         self._mcp_server: Optional[Any] = None
 
-        self.logger.info(
-            "NomiDaemon initialized",
-            project_root=str(self.project_root),
-            storage_dir=str(self.storage_dir),
-        )
+        self.logger.info(f"NomiDaemon initialized: project_root={self.project_root}, storage_dir={self.storage_dir}")
 
     def _get_storage_dir(self) -> Path:
         """Get or create the storage directory path."""
@@ -113,9 +109,9 @@ class NomiDaemon(LoggerMixin):
         """Create the storage directory if it doesn't exist."""
         try:
             self.storage_dir.mkdir(parents=True, exist_ok=True)
-            self.logger.debug("Storage directory ready", path=str(self.storage_dir))
+            self.logger.debug(f"Storage directory ready: path={self.storage_dir}")
         except OSError as e:
-            self.logger.error("Failed to create storage directory", error=str(e))
+            self.logger.error(f"Failed to create storage directory: {e}")
             raise RuntimeError(f"Cannot create storage directory: {e}")
 
     def _initialize_database(self) -> None:
@@ -125,9 +121,9 @@ class NomiDaemon(LoggerMixin):
         try:
             self._symbol_store = SymbolStore(db_path)
             self._graph_store = GraphStore(db_path)
-            self.logger.debug("Database initialized", path=str(db_path))
+            self.logger.debug(f"Database initialized: path={db_path}")
         except Exception as e:
-            self.logger.error("Failed to initialize database", error=str(e))
+            self.logger.error(f"Failed to initialize database: {e}")
             raise RuntimeError(f"Database initialization failed: {e}")
 
     def _initialize_subsystems(self) -> None:
@@ -168,16 +164,12 @@ class NomiDaemon(LoggerMixin):
             self._start_schedulers()
             self._start_health_checker()
 
-            self.logger.info(
-                "Nomi daemon started",
-                pid=os.getpid(),
-                port=self.config.server_port,
-            )
+            self.logger.info(f"Nomi daemon started: pid={os.getpid()}, port={self.config.server_port}")
 
             self._main_loop()
 
         except Exception as e:
-            self.logger.error("Daemon startup failed", error=str(e))
+            self.logger.error(f"Daemon startup failed: {e}")
             self.stop()
             raise
 
@@ -191,7 +183,7 @@ class NomiDaemon(LoggerMixin):
 
     def _start_api_server(self) -> None:
         """Start the API server subsystem."""
-        self.logger.info("Starting API server...", port=self.config.server_port)
+        self.logger.info(f"Starting API server on port {self.config.server_port}...")
 
     def _start_mcp_server(self) -> None:
         """Start the MCP server subsystem."""
@@ -324,7 +316,7 @@ class NomiDaemon(LoggerMixin):
                     indexed_files = stats.total_files
                     total_symbols = stats.total_symbols
                 except Exception as e:
-                    self.logger.debug("Failed to get index stats", error=str(e))
+                    self.logger.debug(f"Failed to get index stats: {e}")
 
             is_indexing = False
             if self._indexing_scheduler is not None:
