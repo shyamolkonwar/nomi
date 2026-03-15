@@ -34,9 +34,7 @@ class Skeletonizer:
         """
         self.preserve_docstrings = preserve_docstrings
 
-    def skeletonize_unit(
-        self, unit: CodeUnit, keep_docstring: bool = True
-    ) -> CodeUnitSkeleton:
+    def skeletonize_unit(self, unit: CodeUnit, keep_docstring: bool = True) -> CodeUnitSkeleton:
         """Create a skeleton from a single CodeUnit.
 
         Args:
@@ -68,9 +66,7 @@ class Skeletonizer:
         """
         return [self.skeletonize_unit(unit) for unit in units]
 
-    def skeletonize_file(
-        self, file_path: str, units: List[CodeUnit]
-    ) -> str:
+    def skeletonize_file(self, file_path: str, units: List[CodeUnit]) -> str:
         """Generate skeletonized file content from multiple units.
 
         Args:
@@ -96,9 +92,7 @@ class Skeletonizer:
 
         return "\n".join(lines)
 
-    def preserve_signatures_only(
-        self, source_code: str, language: Language
-    ) -> str:
+    def preserve_signatures_only(self, source_code: str, language: Language) -> str:
         """Remove all implementation bodies, keep only signatures.
 
         Args:
@@ -455,9 +449,7 @@ class Skeletonizer:
 
         return "\n".join(result_lines)
 
-    def calculate_skeleton_tokens(
-        self, unit: CodeUnit, chars_per_token: float = 4.0
-    ) -> int:
+    def calculate_skeleton_tokens(self, unit: CodeUnit, chars_per_token: float = 4.0) -> int:
         """Estimate token count for a skeletonized unit.
 
         Args:
@@ -470,5 +462,5 @@ class Skeletonizer:
         skeleton = self.skeletonize_unit(unit)
         content = skeleton.signature
         if skeleton.docstring:
-            content += f"\"\"\"{skeleton.docstring}\"\"\""
+            content += f'"""{skeleton.docstring}"""'
         return int(len(content) / chars_per_token)

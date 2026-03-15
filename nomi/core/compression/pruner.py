@@ -76,9 +76,7 @@ class ContextPruner:
             content += unit.docstring
         return int(len(content) / self.CHARS_PER_TOKEN)
 
-    def prune_by_depth(
-        self, units: List[CodeUnit], max_depth: int
-    ) -> List[CodeUnit]:
+    def prune_by_depth(self, units: List[CodeUnit], max_depth: int) -> List[CodeUnit]:
         """Remove units beyond depth limit.
 
         Args:
@@ -117,15 +115,9 @@ class ContextPruner:
         Returns:
             Filtered list of units meeting relevance threshold
         """
-        return [
-            u
-            for u in units
-            if self._calculate_relevance(u, focal_unit_ids) >= min_relevance
-        ]
+        return [u for u in units if self._calculate_relevance(u, focal_unit_ids) >= min_relevance]
 
-    def _calculate_relevance(
-        self, unit: CodeUnit, focal_unit_ids: Set[str]
-    ) -> float:
+    def _calculate_relevance(self, unit: CodeUnit, focal_unit_ids: Set[str]) -> float:
         """Calculate relevance score for a unit.
 
         Args:
@@ -143,9 +135,7 @@ class ContextPruner:
 
         return 0.5
 
-    def prune_by_token_count(
-        self, units: List[CodeUnit], max_tokens: int
-    ) -> List[CodeUnit]:
+    def prune_by_token_count(self, units: List[CodeUnit], max_tokens: int) -> List[CodeUnit]:
         """Remove units to fit within token budget.
 
         Removes lowest-relevance units first until budget is met.
@@ -157,9 +147,7 @@ class ContextPruner:
         Returns:
             Pruned list of units within token budget
         """
-        sorted_units = sorted(
-            units, key=lambda u: self._calculate_priority(u), reverse=True
-        )
+        sorted_units = sorted(units, key=lambda u: self._calculate_priority(u), reverse=True)
 
         result = []
         total_tokens = 0
@@ -233,9 +221,7 @@ class ContextPruner:
         for u in focal_units:
             focal_deps.update(u.dependencies)
 
-        one_hop_deps = [
-            d for d in dependencies if d.id in focal_deps or d.id in focal_ids
-        ]
+        one_hop_deps = [d for d in dependencies if d.id in focal_deps or d.id in focal_ids]
         two_plus_hop_deps = [d for d in dependencies if d not in one_hop_deps]
 
         two_plus_hop_deps = self.prune_by_depth(two_plus_hop_deps, cfg.max_depth - 1)
@@ -252,9 +238,7 @@ class ContextPruner:
 
         remaining_budget = cfg.max_tokens - total_tokens
         if remaining_budget > 0:
-            two_plus_filtered = self.prune_by_token_count(
-                two_plus_hop_deps, remaining_budget // 4
-            )
+            two_plus_filtered = self.prune_by_token_count(two_plus_hop_deps, remaining_budget // 4)
             for unit in two_plus_filtered:
                 unit_tokens = int(self._estimate_tokens(unit) * 0.25)
                 if total_tokens + unit_tokens <= cfg.max_tokens:

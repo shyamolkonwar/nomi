@@ -3,8 +3,6 @@
 This module provides the init command for setting up Nomi in a project directory.
 """
 
-import json
-import os
 from pathlib import Path
 from typing import List, Optional
 
@@ -189,8 +187,18 @@ def init_command(
 
     # Validate languages
     valid_languages = {
-        "python", "typescript", "javascript", "go", "rust",
-        "java", "cpp", "c", "ruby", "php", "swift", "kotlin",
+        "python",
+        "typescript",
+        "javascript",
+        "go",
+        "rust",
+        "java",
+        "cpp",
+        "c",
+        "ruby",
+        "php",
+        "swift",
+        "kotlin",
     }
     invalid_languages = set(detected_languages) - valid_languages
     if invalid_languages:
@@ -240,10 +248,10 @@ def init_command(
             console.print(f"[yellow]Warning: Could not update .gitignore: {e}[/yellow]")
 
     console.print("\n[bold green]Nomi initialized successfully![/bold green]")
-    console.print(f"\nNext steps:")
+    console.print("\nNext steps:")
     console.print(f"  1. Review configuration: {config_file}")
-    console.print(f"  2. Start the daemon: nomi start")
-    console.print(f"  3. Check status: nomi status")
+    console.print("  2. Start the daemon: nomi start")
+    console.print("  3. Check status: nomi status")
 
 
 if __name__ == "__main__":

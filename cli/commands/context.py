@@ -11,8 +11,6 @@ import requests
 import typer
 from rich.console import Console
 from rich.panel import Panel
-from rich.syntax import Syntax
-
 console = Console()
 app = typer.Typer(help="Build and display context")
 
@@ -167,11 +165,13 @@ def _display_formatted_context(result: dict) -> None:
             meta_items.append(f"Symbols: {metadata['symbol_count']}")
 
         if meta_items:
-            console.print(Panel(
-                " | ".join(meta_items),
-                title="[bold]Context Metadata[/bold]",
-                border_style="blue",
-            ))
+            console.print(
+                Panel(
+                    " | ".join(meta_items),
+                    title="[bold]Context Metadata[/bold]",
+                    border_style="blue",
+                )
+            )
 
     # Display context content
     context_content = result.get("context", "")

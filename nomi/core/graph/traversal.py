@@ -106,9 +106,7 @@ class GraphTraversal:
         dfs_recursive(start_unit_id, 0)
         return result
 
-    def find_shortest_path(
-        self, from_unit_id: str, to_unit_id: str
-    ) -> Optional[List[str]]:
+    def find_shortest_path(self, from_unit_id: str, to_unit_id: str) -> Optional[List[str]]:
         """Find the shortest path between two units using BFS.
 
         Args:
@@ -162,9 +160,7 @@ class GraphTraversal:
                 graph[edge.source_id] = set()
             graph[edge.source_id].add(edge.target_id)
 
-        def find_cycles_from_node(
-            start: str, current: str, path: List[str], visited: Set[str]
-        ) -> None:
+        def find_cycles_from_node(start: str, current: str, path: List[str], visited: Set[str]) -> None:
             if current in path:
                 cycle_start = path.index(current)
                 cycle = path[cycle_start:] + [current]

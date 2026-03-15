@@ -49,17 +49,13 @@ class RepositoryMap:
 class RepoMapBuilder:
     """Builds a compact repository map using PageRank-based importance scores."""
 
-    def __init__(
-        self, graph_traversal: GraphTraversal, symbol_store: SymbolStore
-    ) -> None:
+    def __init__(self, graph_traversal: GraphTraversal, symbol_store: SymbolStore) -> None:
         self.graph_traversal = graph_traversal
         self.symbol_store = symbol_store
         self._importance_cache: Optional[Dict[str, float]] = None
         self._cache_timestamp: Optional[datetime] = None
 
-    def build_map(
-        self, max_entries: int = 100, max_symbols_per_module: int = 10
-    ) -> RepositoryMap:
+    def build_map(self, max_entries: int = 100, max_symbols_per_module: int = 10) -> RepositoryMap:
         """Build a repository map with top important symbols.
 
         Args:
@@ -79,9 +75,7 @@ class RepoMapBuilder:
         )
 
         modules_by_path = self._group_by_module(sorted_units)
-        module_importance = self._calculate_module_importance(
-            modules_by_path, importance_scores
-        )
+        module_importance = self._calculate_module_importance(modules_by_path, importance_scores)
 
         sorted_modules = sorted(
             modules_by_path.keys(),
@@ -234,9 +228,7 @@ class RepoMapBuilder:
         except Exception:
             return []
 
-    def _create_map_entry(
-        self, unit_id: str, importance_scores: Dict[str, float]
-    ) -> Optional[MapEntry]:
+    def _create_map_entry(self, unit_id: str, importance_scores: Dict[str, float]) -> Optional[MapEntry]:
         """Create a MapEntry from a unit ID."""
         try:
             code_unit = self.symbol_store.get_code_unit_by_id(unit_id)
@@ -308,9 +300,7 @@ class RepoMapBuilder:
         module_scores: Dict[str, float] = {}
 
         for module_path, unit_ids in modules_by_path.items():
-            total_score = sum(
-                importance_scores.get(uid, 0.0) for uid in unit_ids
-            )
+            total_score = sum(importance_scores.get(uid, 0.0) for uid in unit_ids)
             module_scores[module_path] = total_score / max(len(unit_ids), 1)
 
         return module_scores

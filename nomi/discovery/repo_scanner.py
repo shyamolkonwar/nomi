@@ -9,7 +9,7 @@ import os
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import List, Dict, Optional, Set, Iterator
+from typing import List, Dict, Optional, Iterator
 import time
 
 from nomi.discovery.language_detector import Language, LanguageDetector
@@ -58,9 +58,7 @@ class ScanStats:
         """
         self.total_files += 1
         self.total_size_bytes += file.size_bytes
-        self.files_by_language[file.language] = (
-            self.files_by_language.get(file.language, 0) + 1
-        )
+        self.files_by_language[file.language] = self.files_by_language.get(file.language, 0) + 1
 
 
 class RepoScanner:
@@ -170,7 +168,7 @@ class RepoScanner:
                 if discovered_file:
                     discovered_files.append(discovered_file)
                     self._stats.add_file(discovered_file)
-            except (OSError, PermissionError) as e:
+            except (OSError, PermissionError):
                 # Log but continue scanning other files
                 continue
 
@@ -231,11 +229,7 @@ class RepoScanner:
             dirpath_path = Path(dirpath)
 
             # Filter directories in-place to avoid descending into ignored dirs
-            dirnames[:] = [
-                d
-                for d in dirnames
-                if not self._should_ignore_dir(dirpath_path / d)
-            ]
+            dirnames[:] = [d for d in dirnames if not self._should_ignore_dir(dirpath_path / d)]
 
             for filename in filenames:
                 file_path = dirpath_path / filename
@@ -260,9 +254,7 @@ class RepoScanner:
             if str(relative_path) == pattern or relative_path.name == pattern:
                 return True
             # Check pattern match
-            if fnmatch.fnmatch(str(relative_path), pattern) or fnmatch.fnmatch(
-                relative_path.name, pattern
-            ):
+            if fnmatch.fnmatch(str(relative_path), pattern) or fnmatch.fnmatch(relative_path.name, pattern):
                 return True
 
         return False
@@ -293,9 +285,7 @@ class RepoScanner:
                 if parent_name == pattern:
                     return True
                 # Check pattern match
-                if fnmatch.fnmatch(parent_str, pattern) or fnmatch.fnmatch(
-                    parent_name, pattern
-                ):
+                if fnmatch.fnmatch(parent_str, pattern) or fnmatch.fnmatch(parent_name, pattern):
                     return True
 
         # Check .gitignore patterns
@@ -346,9 +336,7 @@ class RepoScanner:
         """
         for gitignore_dir, patterns in self._gitignore_patterns.items():
             try:
-                path_from_gitignore = relative_path.relative_to(
-                    gitignore_dir.relative_to(self.root_path)
-                )
+                path_from_gitignore = relative_path.relative_to(gitignore_dir.relative_to(self.root_path))
             except ValueError:
                 # Path is not relative to this gitignore's directory
                 continue
@@ -360,15 +348,12 @@ class RepoScanner:
 
                 # Normalize pattern
                 clean_pattern = pattern.rstrip("/")
-                is_dir_pattern = pattern.endswith("/")
 
                 # Match against the path
                 path_str = str(path_from_gitignore)
                 name = path_from_gitignore.name
 
-                if fnmatch.fnmatch(path_str, clean_pattern) or fnmatch.fnmatch(
-                    path_str, f"**/{clean_pattern}"
-                ):
+                if fnmatch.fnmatch(path_str, clean_pattern) or fnmatch.fnmatch(path_str, f"**/{clean_pattern}"):
                     return True
                 if fnmatch.fnmatch(name, clean_pattern):
                     return True

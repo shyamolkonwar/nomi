@@ -139,9 +139,7 @@ class ChangeHandler(FileSystemEventHandler, LoggerMixin):
             event: The move event from watchdog.
         """
         if isinstance(event, (FileMovedEvent, DirMovedEvent)):
-            if self.should_ignore(event.src_path) and self.should_ignore(
-                event.dest_path
-            ):
+            if self.should_ignore(event.src_path) and self.should_ignore(event.dest_path):
                 return
 
             change = FileChange(
@@ -176,9 +174,7 @@ class ChangeHandler(FileSystemEventHandler, LoggerMixin):
 
         return False
 
-    def _queue_change(
-        self, change: FileChange, dest_path: Optional[str] = None
-    ) -> None:
+    def _queue_change(self, change: FileChange, dest_path: Optional[str] = None) -> None:
         """Queue a change for debounced processing.
 
         Args:
@@ -219,9 +215,7 @@ class ChangeHandler(FileSystemEventHandler, LoggerMixin):
                     error=str(e),
                 )
 
-    def debounce_changes(
-        self, changes: List[FileChange], delay_ms: int = 500
-    ) -> List[FileChange]:
+    def debounce_changes(self, changes: List[FileChange], delay_ms: int = 500) -> List[FileChange]:
         """Debounce rapid successive changes to the same file.
 
         Groups multiple changes to the same file within the delay window,
@@ -272,20 +266,14 @@ class ChangeHandler(FileSystemEventHandler, LoggerMixin):
                 representative = group[-1]
 
                 if len(group) > 1:
-                    has_created = any(
-                        c.change_type == FileChangeType.CREATED for c in group
-                    )
-                    has_deleted = any(
-                        c.change_type == FileChangeType.DELETED for c in group
-                    )
+                    has_created = any(c.change_type == FileChangeType.CREATED for c in group)
+                    has_deleted = any(c.change_type == FileChangeType.DELETED for c in group)
 
                     if has_created and has_deleted:
                         if group[-1].change_type == FileChangeType.CREATED:
                             representative = group[-1]
                         else:
-                            representative = next(
-                                c for c in reversed(group) if c.change_type == FileChangeType.CREATED
-                            )
+                            representative = next(c for c in reversed(group) if c.change_type == FileChangeType.CREATED)
 
                 result.append(representative)
 

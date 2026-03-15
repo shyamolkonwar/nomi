@@ -5,8 +5,6 @@ This module provides the main Typer application and global CLI configuration.
 
 import logging
 import sys
-from pathlib import Path
-from typing import Optional
 
 import typer
 from rich.console import Console

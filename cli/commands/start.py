@@ -5,7 +5,6 @@ This module provides the start command for launching the Nomi daemon.
 
 import json
 import os
-import signal
 import sys
 import time
 from pathlib import Path
@@ -196,7 +195,7 @@ def start_command(
     is_running, existing_pid = is_daemon_running(project_root)
     if is_running:
         console.print(f"[yellow]Nomi daemon is already running (PID: {existing_pid})[/yellow]")
-        console.print(f"[blue]Use 'nomi status' to check details or 'nomi stop' to restart.[/blue]")
+        console.print("[blue]Use 'nomi status' to check details or 'nomi stop' to restart.[/blue]")
         raise typer.Exit(0)
 
     # Update config with CLI options
@@ -232,11 +231,13 @@ def start_command(
             if watch:
                 endpoints.append("[green]File Watcher:[/green] Enabled")
 
-            console.print(Panel(
-                "\n".join(endpoints),
-                title="[bold]Nomi Daemon Started[/bold]",
-                border_style="green",
-            ))
+            console.print(
+                Panel(
+                    "\n".join(endpoints),
+                    title="[bold]Nomi Daemon Started[/bold]",
+                    border_style="green",
+                )
+            )
 
             console.print(f"[dim]Project: {project_root}[/dim]")
             console.print(f"[dim]PID: {os.getpid()}[/dim]")

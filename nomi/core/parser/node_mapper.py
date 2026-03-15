@@ -27,9 +27,7 @@ class NodeMapper:
         """
         self.language = language
 
-    def map_function_node(
-        self, node: Node, source_bytes: bytes, file_path: str
-    ) -> CodeUnit:
+    def map_function_node(self, node: Node, source_bytes: bytes, file_path: str) -> CodeUnit:
         """Map a function definition node to a CodeUnit.
 
         Args:
@@ -60,9 +58,7 @@ class NodeMapper:
             language=self.language.value,
         )
 
-    def map_class_node(
-        self, node: Node, source_bytes: bytes, file_path: str
-    ) -> CodeUnit:
+    def map_class_node(self, node: Node, source_bytes: bytes, file_path: str) -> CodeUnit:
         """Map a class definition node to a CodeUnit.
 
         Args:
@@ -93,9 +89,7 @@ class NodeMapper:
             language=self.language.value,
         )
 
-    def map_method_node(
-        self, node: Node, source_bytes: bytes, file_path: str, class_name: str
-    ) -> CodeUnit:
+    def map_method_node(self, node: Node, source_bytes: bytes, file_path: str, class_name: str) -> CodeUnit:
         """Map a method definition node to a CodeUnit.
 
         Args:
@@ -127,9 +121,7 @@ class NodeMapper:
             language=self.language.value,
         )
 
-    def map_interface_node(
-        self, node: Node, source_bytes: bytes, file_path: str
-    ) -> CodeUnit:
+    def map_interface_node(self, node: Node, source_bytes: bytes, file_path: str) -> CodeUnit:
         """Map an interface definition node to a CodeUnit.
 
         Args:
@@ -235,7 +227,7 @@ class NodeMapper:
         Returns:
             The node text as a string.
         """
-        return source_bytes[node.start_byte : node.end_byte].decode("utf-8", errors="replace")
+        return source_bytes[node.start_byte:node.end_byte].decode("utf-8", errors="replace")
 
     def _get_byte_range(self, node: Node) -> Tuple[int, int]:
         """Get the byte range of a node.
@@ -327,7 +319,7 @@ class NodeMapper:
         if first_stmt.type == "expression_statement":
             expr = first_stmt.children[0] if first_stmt.children else None
             if expr and expr.type == "string":
-                return self._get_node_text(expr, source_bytes).strip('"\'')
+                return self._get_node_text(expr, source_bytes).strip("\"'")
         return None
 
     def _extract_python_name(self, node: Node, source_bytes: bytes) -> str:

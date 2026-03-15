@@ -5,8 +5,6 @@ This module provides REST endpoints for repository map and indexing operations.
 
 import logging
 from datetime import datetime
-from typing import Dict, List
-
 from fastapi import APIRouter, HTTPException, status
 
 from nomi.core.index.symbol_index import SymbolIndex
@@ -38,33 +36,39 @@ async def get_repository_map(
         for module in repo_map.modules:
             module_symbols = []
             for symbol in module.symbols:
-                module_symbols.append({
+                module_symbols.append(
+                    {
+                        "name": symbol.symbol_name,
+                        "unit_kind": symbol.unit_kind,
+                        "file_path": symbol.file_path,
+                        "line_number": symbol.line_number,
+                        "importance_score": symbol.importance_score,
+                        "is_exported": symbol.is_exported,
+                    }
+                )
+
+            modules.append(
+                {
+                    "name": module.name,
+                    "path": module.path,
+                    "symbols": module_symbols,
+                    "symbol_count": module.symbol_count,
+                    "importance_score": module.importance_score,
+                }
+            )
+
+        top_level_symbols = []
+        for symbol in repo_map.top_level_symbols:
+            top_level_symbols.append(
+                {
                     "name": symbol.symbol_name,
                     "unit_kind": symbol.unit_kind,
                     "file_path": symbol.file_path,
                     "line_number": symbol.line_number,
                     "importance_score": symbol.importance_score,
                     "is_exported": symbol.is_exported,
-                })
-
-            modules.append({
-                "name": module.name,
-                "path": module.path,
-                "symbols": module_symbols,
-                "symbol_count": module.symbol_count,
-                "importance_score": module.importance_score,
-            })
-
-        top_level_symbols = []
-        for symbol in repo_map.top_level_symbols:
-            top_level_symbols.append({
-                "name": symbol.symbol_name,
-                "unit_kind": symbol.unit_kind,
-                "file_path": symbol.file_path,
-                "line_number": symbol.line_number,
-                "importance_score": symbol.importance_score,
-                "is_exported": symbol.is_exported,
-            })
+                }
+            )
 
         return {
             "modules": modules,
@@ -98,10 +102,7 @@ async def get_indexing_status(
     try:
         stats = symbol_index.get_stats()
 
-        symbols_by_language = {
-            lang.value: count
-            for lang, count in stats.symbols_by_language.items()
-        }
+        symbols_by_language = {lang.value: count for lang, count in stats.symbols_by_language.items()}
 
         return {
             "status": "ready" if stats.total_symbols > 0 else "empty",
@@ -162,16 +163,10 @@ async def get_repository_statistics(
     try:
         index_stats = symbol_index.get_stats()
 
-        symbols_by_language = {
-            lang.value: count
-            for lang, count in index_stats.symbols_by_language.items()
-        }
+        symbols_by_language = {lang.value: count for lang, count in index_stats.symbols_by_language.items()}
 
         importance_scores = repo_map_builder.calculate_importance_scores()
-        avg_importance = (
-            sum(importance_scores.values()) / len(importance_scores)
-            if importance_scores else 0.0
-        )
+        avg_importance = sum(importance_scores.values()) / len(importance_scores) if importance_scores else 0.0
 
         top_symbols = sorted(
             importance_scores.items(),
@@ -189,10 +184,7 @@ async def get_repository_statistics(
             "importance": {
                 "total_scored_symbols": len(importance_scores),
                 "average_importance": round(avg_importance, 4),
-                "top_symbols": [
-                    {"unit_id": unit_id, "score": round(score, 4)}
-                    for unit_id, score in top_symbols
-                ],
+                "top_symbols": [{"unit_id": unit_id, "score": round(score, 4)} for unit_id, score in top_symbols],
             },
         }
 

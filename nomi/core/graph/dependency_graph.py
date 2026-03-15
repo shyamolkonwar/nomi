@@ -50,9 +50,7 @@ class DependencyGraph:
 
         return edges
 
-    def build_for_file(
-        self, file_path: str, code_units: List[CodeUnit]
-    ) -> List[DependencyEdge]:
+    def build_for_file(self, file_path: str, code_units: List[CodeUnit]) -> List[DependencyEdge]:
         """Build all edges for a file's code units.
 
         Args:
@@ -72,9 +70,7 @@ class DependencyGraph:
         units_dict = {unit.id: unit for unit in code_units}
         file_units_dict = {file_path: code_units}
 
-        interface_units = [
-            unit for unit in code_units if unit.unit_kind.value == "INTERFACE"
-        ]
+        interface_units = [unit for unit in code_units if unit.unit_kind.value == "INTERFACE"]
 
         for unit in code_units:
             call_edges = self.edge_builder.build_call_edges(unit, units_dict)
@@ -88,9 +84,7 @@ class DependencyGraph:
                 self.graph_store.insert_edge(edge)
 
             if unit.unit_kind.value == "CLASS":
-                implement_edges = self.edge_builder.build_implement_edges(
-                    unit, interface_units
-                )
+                implement_edges = self.edge_builder.build_implement_edges(unit, interface_units)
                 for edge in implement_edges:
                     edges.append(edge)
                     self.graph_store.insert_edge(edge)
@@ -110,9 +104,7 @@ class DependencyGraph:
         if depth == 1:
             return self.graph_store.get_dependencies(unit_id)
 
-        return self.traversal.traverse_bfs(
-            unit_id, max_depth=depth, edge_types=None
-        )
+        return self.traversal.traverse_bfs(unit_id, max_depth=depth, edge_types=None)
 
     def get_dependents(self, unit_id: str, depth: int = 1) -> List[str]:
         """Get reverse dependencies (callers).
@@ -150,9 +142,7 @@ class DependencyGraph:
 
         return result
 
-    def get_dependency_tree(
-        self, unit_id: str, max_depth: int = 2
-    ) -> DependencyTree:
+    def get_dependency_tree(self, unit_id: str, max_depth: int = 2) -> DependencyTree:
         """Get hierarchical tree of dependencies.
 
         Args:

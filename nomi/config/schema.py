@@ -43,10 +43,10 @@ DEFAULT_LANGUAGES: List[str] = [
 
 class NomiConfig(BaseModel):
     """Main configuration model for Nomi.
-    
+
     This class defines all configuration options for the Nomi context engine,
     including language support, file watching, MCP integration, and ignore patterns.
-    
+
     Attributes:
         languages: List of programming languages to analyze and index.
         watch: Whether to enable file watching for automatic reindexing.
@@ -58,7 +58,7 @@ class NomiConfig(BaseModel):
         log_level: Logging level (DEBUG, INFO, WARNING, ERROR).
         server_port: Port number for the API server.
     """
-    
+
     languages: List[str] = Field(
         default_factory=lambda: DEFAULT_LANGUAGES.copy(),
         description="List of programming languages to analyze and index",
@@ -98,25 +98,35 @@ class NomiConfig(BaseModel):
         ge=1024,
         le=65535,
     )
-    
+
     @field_validator("languages")
     @classmethod
     def validate_languages(cls, v: List[str]) -> List[str]:
         """Validate that languages list is not empty and contains valid values."""
         if not v:
             raise ValueError("At least one language must be specified")
-        
+
         valid_languages = {
-            "python", "typescript", "javascript", "go", "rust",
-            "java", "cpp", "c", "ruby", "php", "swift", "kotlin",
+            "python",
+            "typescript",
+            "javascript",
+            "go",
+            "rust",
+            "java",
+            "cpp",
+            "c",
+            "ruby",
+            "php",
+            "swift",
+            "kotlin",
         }
-        
+
         invalid = set(v) - valid_languages
         if invalid:
             raise ValueError(f"Unsupported languages: {invalid}")
-        
+
         return v
-    
+
     @field_validator("log_level")
     @classmethod
     def validate_log_level(cls, v: str) -> str:
@@ -126,7 +136,7 @@ class NomiConfig(BaseModel):
         if upper_v not in valid_levels:
             raise ValueError(f"Invalid log level: {v}. Must be one of {valid_levels}")
         return upper_v
-    
+
     @field_validator("project_root", "index_cache_dir")
     @classmethod
     def validate_path(cls, v: Path) -> Path:
@@ -134,10 +144,10 @@ class NomiConfig(BaseModel):
         if isinstance(v, str):
             return Path(v)
         return v
-    
+
     class Config:
         """Pydantic configuration."""
-        
+
         validate_assignment = True
         str_strip_whitespace = True
         json_schema_extra = {
@@ -156,10 +166,10 @@ class NomiConfig(BaseModel):
 
 class ConfigValidationError(Exception):
     """Exception raised when configuration validation fails."""
-    
+
     def __init__(self, message: str, field: str | None = None) -> None:
         """Initialize the validation error.
-        
+
         Args:
             message: Human-readable error message.
             field: Name of the field that failed validation, if applicable.

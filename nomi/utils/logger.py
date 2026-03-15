@@ -22,21 +22,21 @@ def configure_logging(
     json_format: bool = False,
 ) -> None:
     """Configure logging for Nomi.
-    
+
     Sets up either structlog or standard library logging based on
     the configuration parameters.
-    
+
     Args:
         log_level: The logging level to use (DEBUG, INFO, WARNING, ERROR, CRITICAL).
         use_structlog: Whether to use structlog for structured logging.
         json_format: Whether to output logs in JSON format (structlog only).
-    
+
     Example:
         >>> configure_logging(log_level="DEBUG")
         >>> configure_logging(log_level="INFO", json_format=True)
     """
     level = getattr(logging, log_level.upper(), logging.INFO)
-    
+
     if use_structlog:
         _configure_structlog(level, json_format)
     else:
@@ -45,7 +45,7 @@ def configure_logging(
 
 def _configure_structlog(level: int, json_format: bool) -> None:
     """Configure structlog for structured logging.
-    
+
     Args:
         level: The logging level.
         json_format: Whether to use JSON formatting.
@@ -60,12 +60,12 @@ def _configure_structlog(level: int, json_format: bool) -> None:
         structlog.processors.format_exc_info,
         structlog.processors.UnicodeDecoder(),
     ]
-    
+
     if json_format:
         processors.append(structlog.processors.JSONRenderer())
     else:
         processors.append(structlog.dev.ConsoleRenderer(colors=sys.stdout.isatty()))
-    
+
     structlog.configure(
         processors=processors,
         context_class=dict,
@@ -73,7 +73,7 @@ def _configure_structlog(level: int, json_format: bool) -> None:
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=True,
     )
-    
+
     # Configure standard library logging to use structlog
     logging.basicConfig(
         format="%(message)s",
@@ -84,7 +84,7 @@ def _configure_structlog(level: int, json_format: bool) -> None:
 
 def _configure_stdlib_logging(level: int) -> None:
     """Configure standard library logging.
-    
+
     Args:
         level: The logging level.
     """
@@ -97,16 +97,16 @@ def _configure_stdlib_logging(level: int) -> None:
 
 def get_logger(name: str | None = None) -> FilteringBoundLogger | logging.Logger:
     """Get a logger instance.
-    
+
     Returns either a structlog logger or standard library logger
     depending on configuration.
-    
+
     Args:
         name: The name of the logger. If None, uses the calling module name.
-    
+
     Returns:
         A logger instance configured for use.
-    
+
     Example:
         >>> logger = get_logger(__name__)
         >>> logger.info("Starting process", task="initialization")
@@ -118,18 +118,18 @@ def get_logger(name: str | None = None) -> FilteringBoundLogger | logging.Logger
 
 class LoggerMixin:
     """Mixin class that provides a logger property.
-    
+
     Classes can inherit from this mixin to automatically get
     a logger property that uses the class name.
-    
+
     Example:
         >>> class MyClass(LoggerMixin):
         ...     def do_something(self):
         ...         self.logger.info("Doing something")
     """
-    
+
     _logger: FilteringBoundLogger | logging.Logger | None = None
-    
+
     @property
     def logger(self) -> FilteringBoundLogger | logging.Logger:
         """Get a logger for this class instance."""
@@ -144,12 +144,12 @@ def log_operation(
     **context: Any,
 ) -> None:
     """Log an operation with structured context.
-    
+
     Args:
         logger: The logger to use.
         operation: Description of the operation.
         **context: Additional context key-value pairs.
-    
+
     Example:
         >>> logger = get_logger(__name__)
         >>> log_operation(logger, "indexing", file_count=42, duration_ms=150)

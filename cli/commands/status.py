@@ -6,7 +6,7 @@ This module provides the status command for checking Nomi daemon status.
 import json
 import os
 import time
-from datetime import timedelta
+
 from pathlib import Path
 from typing import Optional, Tuple
 
@@ -15,8 +15,6 @@ import typer
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-
-from nomi.config.loader import load_config
 
 console = Console()
 app = typer.Typer(help="Show Nomi daemon status")
@@ -170,13 +168,13 @@ def status_command() -> None:
     lock_file = find_daemon_lock_file()
 
     if lock_file is None:
-        console.print(Panel(
-            "[red]Not running[/red]\n\n"
-            "No daemon lock file found.\n"
-            "Run 'nomi start' to start the daemon.",
-            title="Nomi Status",
-            border_style="red",
-        ))
+        console.print(
+            Panel(
+                "[red]Not running[/red]\n\n" "No daemon lock file found.\n" "Run 'nomi start' to start the daemon.",
+                title="Nomi Status",
+                border_style="red",
+            )
+        )
         raise typer.Exit(0)
 
     # Get project root from lock file location
@@ -193,13 +191,15 @@ def status_command() -> None:
     if not is_running:
         # Clean up stale lock file
         lock_file.unlink(missing_ok=True)
-        console.print(Panel(
-            "[red]Not running[/red]\n\n"
-            "Daemon process is not running (stale lock file removed).\n"
-            "Run 'nomi start' to start the daemon.",
-            title="Nomi Status",
-            border_style="red",
-        ))
+        console.print(
+            Panel(
+                "[red]Not running[/red]\n\n"
+                "Daemon process is not running (stale lock file removed).\n"
+                "Run 'nomi start' to start the daemon.",
+                title="Nomi Status",
+                border_style="red",
+            )
+        )
         raise typer.Exit(0)
 
     # Calculate uptime
@@ -240,11 +240,13 @@ def status_command() -> None:
     table.add_row("Project root", str(project_root))
 
     # Display status
-    console.print(Panel(
-        table,
-        title="[bold]Nomi Status[/bold]",
-        border_style="green" if is_running else "red",
-    ))
+    console.print(
+        Panel(
+            table,
+            title="[bold]Nomi Status[/bold]",
+            border_style="green" if is_running else "red",
+        )
+    )
 
     # Show quick commands
     console.print("\n[dim]Commands:[/dim]")

@@ -28,9 +28,7 @@ class ModuleGraph:
         self._module_by_unit: Dict[str, str] = {}
 
     @classmethod
-    def build_from_dependency_graph(
-        cls, graph_store: GraphStore
-    ) -> "ModuleGraph":
+    def build_from_dependency_graph(cls, graph_store: GraphStore) -> "ModuleGraph":
         """Build module graph from dependency graph.
 
         Args:
@@ -155,9 +153,7 @@ class ModuleGraph:
                         cycle_start = path.index(neighbor)
                         cycle = path[cycle_start:] + [neighbor]
                         normalized = self._normalize_cycle(cycle)
-                        if normalized not in [
-                            self._normalize_cycle(c) for c in cycles
-                        ]:
+                        if normalized not in [self._normalize_cycle(c) for c in cycles]:
                             cycles.append(cycle)
 
             rec_stack.remove(node)
@@ -188,13 +184,9 @@ class ModuleGraph:
         Returns:
             List of layers, where each layer is a list of module paths
         """
-        in_degree: Dict[str, int] = {
-            path: len(module.incoming) for path, module in self.modules.items()
-        }
+        in_degree: Dict[str, int] = {path: len(module.incoming) for path, module in self.modules.items()}
 
-        zero_in_degree = deque(
-            [path for path, degree in in_degree.items() if degree == 0]
-        )
+        zero_in_degree = deque([path for path, degree in in_degree.items() if degree == 0])
 
         layers: List[List[str]] = []
         processed: Set[str] = set()
@@ -305,11 +297,7 @@ class ModuleGraph:
         Returns:
             List of module paths
         """
-        return [
-            path
-            for path, module in self.modules.items()
-            if not module.outgoing and module.incoming
-        ]
+        return [path for path, module in self.modules.items() if not module.outgoing and module.incoming]
 
     def get_root_modules(self) -> List[str]:
         """Get modules with no incoming dependencies (root modules).
@@ -317,8 +305,4 @@ class ModuleGraph:
         Returns:
             List of module paths
         """
-        return [
-            path
-            for path, module in self.modules.items()
-            if not module.incoming and module.outgoing
-        ]
+        return [path for path, module in self.modules.items() if not module.incoming and module.outgoing]

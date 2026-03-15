@@ -145,9 +145,7 @@ class TokenBudget:
 
         remaining_budget = self.max_tokens - total_tokens
 
-        sorted_deps = sorted(
-            dependencies, key=lambda u: self.estimate_code_unit_tokens(u), reverse=True
-        )
+        sorted_deps = sorted(dependencies, key=lambda u: self.estimate_code_unit_tokens(u), reverse=True)
 
         for unit in sorted_deps:
             full_tokens = self.estimate_code_unit_tokens(unit)
@@ -171,9 +169,7 @@ class TokenBudget:
             estimated_tokens=total_tokens,
         )
 
-    def get_compression_ratio(
-        self, original: CodeUnit, skeleton: CodeUnitSkeleton
-    ) -> float:
+    def get_compression_ratio(self, original: CodeUnit, skeleton: CodeUnitSkeleton) -> float:
         """Calculate compression ratio achieved by skeletonization.
 
         Args:
@@ -191,9 +187,7 @@ class TokenBudget:
 
         return 1.0 - (skeleton_tokens / original_tokens)
 
-    def get_stats(
-        self, result: AllocationResult
-    ) -> dict:
+    def get_stats(self, result: AllocationResult) -> dict:
         """Get statistics about token allocation.
 
         Args:
@@ -202,13 +196,8 @@ class TokenBudget:
         Returns:
             Dictionary with allocation statistics
         """
-        full_tokens = sum(
-            self.estimate_code_unit_tokens(u) for u in result.full_units
-        )
-        skeleton_tokens = sum(
-            int(self.estimate_code_unit_tokens(u) * 0.25)
-            for u in result.skeleton_units
-        )
+        full_tokens = sum(self.estimate_code_unit_tokens(u) for u in result.full_units)
+        skeleton_tokens = sum(int(self.estimate_code_unit_tokens(u) * 0.25) for u in result.skeleton_units)
 
         return {
             "max_tokens": self.max_tokens,

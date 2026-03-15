@@ -7,9 +7,8 @@ import logging
 from contextlib import asynccontextmanager
 from typing import Optional
 
-from fastapi import FastAPI, status
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
 from nomi.api.routes import context, repo, symbol
 from nomi.core.context.context_builder import ContextBuilder
@@ -182,8 +181,6 @@ def _setup_dependency_injection(app: FastAPI) -> None:
     Args:
         app: The FastAPI application instance.
     """
-    from fastapi import Depends
-
     def get_context_builder() -> Optional[ContextBuilder]:
         return get_api_state().context_builder
 

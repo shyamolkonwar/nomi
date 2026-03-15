@@ -78,9 +78,7 @@ class SymbolStore:
 
                 conn.commit()
         except sqlite3.Error as e:
-            raise StorageError(
-                f"Failed to insert code unit {code_unit.id}: {e}"
-            )
+            raise StorageError(f"Failed to insert code unit {code_unit.id}: {e}")
 
     def get_code_unit_by_id(self, unit_id: str) -> Optional[CodeUnit]:
         """Retrieve a code unit by its ID."""

@@ -48,15 +48,11 @@ class ASTExtractor:
             if query_file.exists():
                 try:
                     query_text = query_file.read_text()
-                    self._query_cache[language] = self._parse_query_file(
-                        language, query_text
-                    )
+                    self._query_cache[language] = self._parse_query_file(language, query_text)
                 except Exception as e:
                     logger.warning(f"Failed to load queries for {language.value}: {e}")
 
-    def _parse_query_file(
-        self, language: Language, query_text: str
-    ) -> dict[str, Query]:
+    def _parse_query_file(self, language: Language, query_text: str) -> dict[str, Query]:
         """Parse a query file and create Query objects.
 
         Args:
@@ -104,9 +100,7 @@ class ASTExtractor:
 
         return queries
 
-    def extract_from_file(
-        self, file_path: str, language: Language
-    ) -> List[CodeUnit]:
+    def extract_from_file(self, file_path: str, language: Language) -> List[CodeUnit]:
         """Extract all CodeUnits from a source file.
 
         Args:
@@ -130,9 +124,7 @@ class ASTExtractor:
 
         return self.extract_from_tree(tree, source_bytes, file_path, language)
 
-    def extract_from_tree(
-        self, tree: Tree, source_bytes: bytes, file_path: str, language: Language
-    ) -> List[CodeUnit]:
+    def extract_from_tree(self, tree: Tree, source_bytes: bytes, file_path: str, language: Language) -> List[CodeUnit]:
         """Extract all CodeUnits from a parsed AST tree.
 
         Args:
@@ -157,9 +149,7 @@ class ASTExtractor:
 
         return units
 
-    def extract_functions(
-        self, tree: Tree, source_bytes: bytes, file_path: str, language: Language
-    ) -> List[CodeUnit]:
+    def extract_functions(self, tree: Tree, source_bytes: bytes, file_path: str, language: Language) -> List[CodeUnit]:
         """Extract function definitions from an AST tree.
 
         Args:
@@ -182,23 +172,17 @@ class ASTExtractor:
             for node, capture_name in captures:
                 if "def" in capture_name or "definition" in capture_name:
                     try:
-                        code_unit = mapper.map_function_node(
-                            node, source_bytes, file_path
-                        )
+                        code_unit = mapper.map_function_node(node, source_bytes, file_path)
                         functions.append(code_unit)
                     except Exception as e:
                         logger.warning(f"Failed to map function node: {e}")
         else:
             # Fallback: manual traversal
-            functions = self._extract_functions_manual(
-                root_node, source_bytes, file_path, language
-            )
+            functions = self._extract_functions_manual(root_node, source_bytes, file_path, language)
 
         return functions
 
-    def extract_classes(
-        self, tree: Tree, source_bytes: bytes, file_path: str, language: Language
-    ) -> List[CodeUnit]:
+    def extract_classes(self, tree: Tree, source_bytes: bytes, file_path: str, language: Language) -> List[CodeUnit]:
         """Extract class definitions from an AST tree.
 
         Args:
@@ -221,29 +205,21 @@ class ASTExtractor:
             for node, capture_name in captures:
                 if "def" in capture_name or "definition" in capture_name:
                     try:
-                        code_unit = mapper.map_class_node(
-                            node, source_bytes, file_path
-                        )
+                        code_unit = mapper.map_class_node(node, source_bytes, file_path)
                         classes.append(code_unit)
 
                         # Also extract methods within this class
-                        methods = self._extract_methods_from_class(
-                            node, source_bytes, file_path, language, mapper
-                        )
+                        methods = self._extract_methods_from_class(node, source_bytes, file_path, language, mapper)
                         classes.extend(methods)
                     except Exception as e:
                         logger.warning(f"Failed to map class node: {e}")
         else:
             # Fallback: manual traversal
-            classes = self._extract_classes_manual(
-                root_node, source_bytes, file_path, language
-            )
+            classes = self._extract_classes_manual(root_node, source_bytes, file_path, language)
 
         return classes
 
-    def extract_methods(
-        self, tree: Tree, source_bytes: bytes, file_path: str, language: Language
-    ) -> List[CodeUnit]:
+    def extract_methods(self, tree: Tree, source_bytes: bytes, file_path: str, language: Language) -> List[CodeUnit]:
         """Extract method definitions from an AST tree.
 
         Note: For most languages, methods are extracted as part of class extraction.
@@ -271,18 +247,14 @@ class ASTExtractor:
                     try:
                         # For standalone methods, we need to determine the receiver class
                         class_name = self._extract_receiver_class(node, source_bytes)
-                        code_unit = mapper.map_method_node(
-                            node, source_bytes, file_path, class_name
-                        )
+                        code_unit = mapper.map_method_node(node, source_bytes, file_path, class_name)
                         methods.append(code_unit)
                     except Exception as e:
                         logger.warning(f"Failed to map method node: {e}")
 
         return methods
 
-    def extract_imports(
-        self, tree: Tree, source_bytes: bytes, file_path: str, language: Language
-    ) -> List[str]:
+    def extract_imports(self, tree: Tree, source_bytes: bytes, file_path: str, language: Language) -> List[str]:
         """Extract import statements from an AST tree.
 
         Args:
@@ -302,15 +274,11 @@ class ASTExtractor:
         if query:
             captures = query.captures(root_node)
             for node, capture_name in captures:
-                import_text = source_bytes[node.start_byte : node.end_byte].decode(
-                    "utf-8", errors="replace"
-                )
+                import_text = source_bytes[node.start_byte:node.end_byte].decode("utf-8", errors="replace")
                 imports.append(import_text)
         else:
             # Fallback: manual extraction
-            imports = self._extract_imports_manual(
-                root_node, source_bytes, language
-            )
+            imports = self._extract_imports_manual(root_node, source_bytes, language)
 
         return imports
 
@@ -364,9 +332,7 @@ class ASTExtractor:
         for child in body_node.children:
             if self._is_method_definition(child, language):
                 try:
-                    code_unit = mapper.map_method_node(
-                        child, source_bytes, file_path, class_name
-                    )
+                    code_unit = mapper.map_method_node(child, source_bytes, file_path, class_name)
                     methods.append(code_unit)
                 except Exception as e:
                     logger.warning(f"Failed to map method node: {e}")
@@ -395,9 +361,9 @@ class ASTExtractor:
                                 "type_identifier",
                                 "qualified_type",
                             }:
-                                return source_bytes[
-                                    subchild.start_byte : subchild.end_byte
-                                ].decode("utf-8", errors="replace")
+                                return source_bytes[subchild.start_byte:subchild.end_byte].decode(
+                                    "utf-8", errors="replace"
+                                )
         return "unknown"
 
     def _is_method_definition(self, node: Node, language: Language) -> bool:
@@ -429,9 +395,7 @@ class ASTExtractor:
         """
         for child in node.children:
             if child.type == "identifier":
-                return source_bytes[child.start_byte : child.end_byte].decode(
-                    "utf-8", errors="replace"
-                )
+                return source_bytes[child.start_byte:child.end_byte].decode("utf-8", errors="replace")
         return "unknown"
 
     def _extract_functions_manual(
@@ -467,11 +431,7 @@ class ASTExtractor:
 
         # Recursively check children
         for child in node.children:
-            functions.extend(
-                self._extract_functions_manual(
-                    child, source_bytes, file_path, language
-                )
-            )
+            functions.extend(self._extract_functions_manual(child, source_bytes, file_path, language))
 
         return functions
 
@@ -505,24 +465,18 @@ class ASTExtractor:
                 classes.append(code_unit)
 
                 # Extract methods
-                methods = self._extract_methods_from_class(
-                    node, source_bytes, file_path, language, mapper
-                )
+                methods = self._extract_methods_from_class(node, source_bytes, file_path, language, mapper)
                 classes.extend(methods)
             except Exception as e:
                 logger.warning(f"Failed to map class node: {e}")
 
         # Recursively check children
         for child in node.children:
-            classes.extend(
-                self._extract_classes_manual(child, source_bytes, file_path, language)
-            )
+            classes.extend(self._extract_classes_manual(child, source_bytes, file_path, language))
 
         return classes
 
-    def _extract_imports_manual(
-        self, node: Node, source_bytes: bytes, language: Language
-    ) -> List[str]:
+    def _extract_imports_manual(self, node: Node, source_bytes: bytes, language: Language) -> List[str]:
         """Manually extract imports by traversing the AST.
 
         Args:
@@ -544,15 +498,11 @@ class ASTExtractor:
         }
 
         if node.type in import_types:
-            import_text = source_bytes[node.start_byte : node.end_byte].decode(
-                "utf-8", errors="replace"
-            )
+            import_text = source_bytes[node.start_byte:node.end_byte].decode("utf-8", errors="replace")
             imports.append(import_text)
 
         # Recursively check children
         for child in node.children:
-            imports.extend(
-                self._extract_imports_manual(child, source_bytes, language)
-            )
+            imports.extend(self._extract_imports_manual(child, source_bytes, language))
 
         return imports

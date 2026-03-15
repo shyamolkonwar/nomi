@@ -9,9 +9,7 @@ from nomi.storage.models import CodeUnit, DependencyEdge, EdgeType
 class EdgeBuilder:
     """Builds dependency edges between code units."""
 
-    def build_call_edges(
-        self, unit: CodeUnit, all_units: Dict[str, CodeUnit]
-    ) -> List[DependencyEdge]:
+    def build_call_edges(self, unit: CodeUnit, all_units: Dict[str, CodeUnit]) -> List[DependencyEdge]:
         """Find CALLS edges by matching unit body against other unit names.
 
         Args:
@@ -43,9 +41,7 @@ class EdgeBuilder:
 
         return edges
 
-    def build_import_edges(
-        self, unit: CodeUnit, file_units: Dict[str, List[CodeUnit]]
-    ) -> List[DependencyEdge]:
+    def build_import_edges(self, unit: CodeUnit, file_units: Dict[str, List[CodeUnit]]) -> List[DependencyEdge]:
         """Find IMPORTS edges from import statements in unit body.
 
         Args:
@@ -58,8 +54,8 @@ class EdgeBuilder:
         edges: List[DependencyEdge] = []
 
         import_patterns = [
-            r'import\s+(\w+)',
-            r'from\s+(\S+)\s+import',
+            r"import\s+(\w+)",
+            r"from\s+(\S+)\s+import",
             r'require\s*\(\s*[\'"]([^\'"]+)[\'"]\s*\)',
             r'import\s+[\'"]([^\'"]+)[\'"]',
         ]
@@ -79,9 +75,7 @@ class EdgeBuilder:
 
         return edges
 
-    def build_define_edges(
-        self, file_path: str, units: List[CodeUnit]
-    ) -> List[DependencyEdge]:
+    def build_define_edges(self, file_path: str, units: List[CodeUnit]) -> List[DependencyEdge]:
         """Create DEFINES edges from file to its code units.
 
         Args:
@@ -104,9 +98,7 @@ class EdgeBuilder:
 
         return edges
 
-    def build_implement_edges(
-        self, unit: CodeUnit, interface_units: List[CodeUnit]
-    ) -> List[DependencyEdge]:
+    def build_implement_edges(self, unit: CodeUnit, interface_units: List[CodeUnit]) -> List[DependencyEdge]:
         """Find IMPLEMENTS edges for class-to-interface relationships.
 
         Args:
@@ -127,9 +119,9 @@ class EdgeBuilder:
                 continue
 
             implement_patterns = [
-                rf'class\s+\w+\s*\([^)]*\b{re.escape(interface_name)}\b',
-                rf'implements\s+{re.escape(interface_name)}\b',
-                rf'extends\s+{re.escape(interface_name)}\b',
+                rf"class\s+\w+\s*\([^)]*\b{re.escape(interface_name)}\b",
+                rf"implements\s+{re.escape(interface_name)}\b",
+                rf"extends\s+{re.escape(interface_name)}\b",
             ]
 
             for pattern in implement_patterns:
@@ -177,7 +169,7 @@ class EdgeBuilder:
 
     def _get_call_pattern(self, symbol_name: str) -> re.Pattern:
         """Get a regex pattern to detect calls to a symbol."""
-        return re.compile(rf'\b{re.escape(symbol_name)}\s*\(')
+        return re.compile(rf"\b{re.escape(symbol_name)}\s*\(")
 
     def _resolve_import_path(
         self,

@@ -5,8 +5,6 @@ Tests the main workflow end-to-end.
 
 import os
 import sys
-import tempfile
-import shutil
 from pathlib import Path
 
 # Add nomi to path
@@ -43,14 +41,14 @@ def test_project_structure():
         "cli/commands",
         "tests",
     ]
-    
+
     project_root = Path(__file__).parent.parent
-    
+
     for dir_path in required_dirs:
         full_path = project_root / dir_path
         assert full_path.exists(), f"Missing directory: {dir_path}"
         print(f"✓ {dir_path}")
-    
+
     print("\n✓ All required directories exist")
 
 
@@ -58,24 +56,28 @@ def test_imports():
     """Verify core modules can be imported."""
     try:
         # Storage
-        from nomi.storage.models import CodeUnit, UnitKind
+        from nomi.storage.models import CodeUnit, UnitKind  # noqa: F401
+
         print("✓ nomi.storage.models")
-        
+
         # Discovery
-        from nomi.discovery.language_detector import LanguageDetector, Language
-        from nomi.discovery.repo_scanner import RepoScanner
+        from nomi.discovery.language_detector import LanguageDetector, Language  # noqa: F401
+        from nomi.discovery.repo_scanner import RepoScanner  # noqa: F401
+
         print("✓ nomi.discovery")
-        
+
         # Config
-        from nomi.config.schema import NomiConfig
-        from nomi.config.loader import load_config
+        from nomi.config.schema import NomiConfig  # noqa: F401
+        from nomi.config.loader import load_config  # noqa: F401
+
         print("✓ nomi.config")
-        
+
         # Utils
-        from nomi.utils.logger import get_logger
-        from nomi.utils.paths import get_project_root
+        from nomi.utils.logger import get_logger  # noqa: F401
+        from nomi.utils.paths import get_project_root  # noqa: F401
+
         print("✓ nomi.utils")
-        
+
         print("\n✓ All core imports successful")
     except ImportError as e:
         print(f"✗ Import failed: {e}")
@@ -85,7 +87,7 @@ def test_imports():
 def test_data_models():
     """Test data model creation."""
     from nomi.storage.models import CodeUnit, UnitKind, DependencyEdge, EdgeType
-    
+
     # Create a CodeUnit
     unit = CodeUnit(
         id="test/file.py:my_function",
@@ -97,36 +99,34 @@ def test_data_models():
         body="    return x + 1",
         dependencies=["test/file.py:other_function"],
         docstring="A test function",
-        language="python"
+        language="python",
     )
-    
+
     assert unit.id == "test/file.py:my_function"
     assert unit.unit_kind == UnitKind.FUNCTION
     print("✓ CodeUnit model works")
-    
+
     # Create a DependencyEdge
     edge = DependencyEdge(
-        source_id="test/file.py:my_function",
-        target_id="test/file.py:other_function",
-        edge_type=EdgeType.CALLS
+        source_id="test/file.py:my_function", target_id="test/file.py:other_function", edge_type=EdgeType.CALLS
     )
-    
+
     assert edge.edge_type == EdgeType.CALLS
     print("✓ DependencyEdge model works")
-    
+
     print("\n✓ All data models work correctly")
 
 
 def test_config():
     """Test configuration loading."""
     from nomi.config.schema import NomiConfig
-    
+
     config = NomiConfig()
-    
+
     assert "python" in config.languages
     assert ".git" in config.ignore_patterns
     assert config.watch is True
-    
+
     print("✓ Default configuration valid")
     print(f"  Languages: {config.languages}")
     print(f"  Ignore patterns: {len(config.ignore_patterns)} patterns")
@@ -135,9 +135,9 @@ def test_config():
 def test_language_detection():
     """Test language detection."""
     from nomi.discovery.language_detector import LanguageDetector, Language
-    
+
     detector = LanguageDetector()
-    
+
     # Test various extensions
     test_cases = [
         ("test.py", Language.PYTHON),
@@ -148,11 +148,11 @@ def test_language_detection():
         ("test.java", Language.JAVA),
         ("test.txt", Language.UNKNOWN),
     ]
-    
+
     for file_path, expected in test_cases:
         detected = detector.detect_language(file_path)
         assert detected == expected, f"Failed for {file_path}: expected {expected}, got {detected}"
-    
+
     print("✓ Language detection works correctly")
 
 
@@ -162,22 +162,22 @@ def main():
     print("Nomi Integration Tests")
     print("=" * 60)
     print()
-    
+
     test_project_structure()
     print()
-    
+
     test_imports()
     print()
-    
+
     test_data_models()
     print()
-    
+
     test_config()
     print()
-    
+
     test_language_detection()
     print()
-    
+
     print("=" * 60)
     print("✓ All tests passed!")
     print("=" * 60)

@@ -29,13 +29,9 @@ class GraphStore:
                 )
                 conn.commit()
         except sqlite3.Error as e:
-            raise StorageError(
-                f"Failed to insert edge {edge.source_id} -> {edge.target_id}: {e}"
-            )
+            raise StorageError(f"Failed to insert edge {edge.source_id} -> {edge.target_id}: {e}")
 
-    def get_dependencies(
-        self, unit_id: str, edge_type: Optional[str] = None
-    ) -> List[str]:
+    def get_dependencies(self, unit_id: str, edge_type: Optional[str] = None) -> List[str]:
         """Get all dependencies (outgoing edges) for a code unit."""
         try:
             with self.schema.get_connection() as conn:
@@ -127,9 +123,7 @@ class GraphStore:
         try:
             with self.schema.get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute(
-                    "SELECT source_id, target_id, edge_type FROM dependencies"
-                )
+                cursor.execute("SELECT source_id, target_id, edge_type FROM dependencies")
                 return [
                     DependencyEdge(
                         source_id=row[0],

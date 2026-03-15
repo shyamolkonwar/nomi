@@ -6,7 +6,7 @@ file extensions and paths.
 
 from enum import Enum
 from pathlib import Path
-from typing import List, Dict, Set, Optional
+from typing import List, Dict, Optional
 
 
 class Language(Enum):

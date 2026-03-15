@@ -4,7 +4,7 @@ This module provides REST endpoints for symbol search and lookup operations.
 """
 
 import logging
-from typing import List, Optional
+from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Path, Query, status
 
@@ -105,10 +105,7 @@ async def search_symbols(
     try:
         results = symbol_search.search(request.query, limit=request.limit or 10)
 
-        symbol_results = [
-            _convert_search_result_to_symbol_result(result)
-            for result in results
-        ]
+        symbol_results = [_convert_search_result_to_symbol_result(result) for result in results]
 
         return SymbolSearchResponse(
             results=symbol_results,
