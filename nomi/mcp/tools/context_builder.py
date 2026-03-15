@@ -52,6 +52,7 @@ async def get_symbol_context_tool(
     request: GetSymbolContextRequest,
     context_builder: ContextBuilder,
     symbol_lookup: SymbolLookup,
+    **kwargs: Any,
 ) -> GetSymbolContextResponse:
     """Handle the get_symbol_context tool invocation.
 

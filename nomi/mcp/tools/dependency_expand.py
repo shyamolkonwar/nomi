@@ -53,6 +53,7 @@ async def expand_dependencies_tool(
     request: ExpandDependenciesRequest,
     dependency_graph: DependencyGraph,
     symbol_lookup: SymbolLookup,
+    **kwargs: Any,
 ) -> ExpandDependenciesResponse:
     """Handle the expand_dependencies tool invocation.
 

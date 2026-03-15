@@ -60,6 +60,7 @@ def get_build_context_tool_definition() -> Dict[str, Any]:
 async def build_context_tool(
     request: BuildContextRequest,
     context_builder: ContextBuilder,
+    **kwargs: Any,
 ) -> BuildContextResponse:
     """Handle the build_context tool invocation.
 

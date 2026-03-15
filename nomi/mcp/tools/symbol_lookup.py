@@ -50,6 +50,7 @@ def get_search_symbol_tool_definition() -> Dict[str, Any]:
 async def search_symbol_tool(
     request: SearchSymbolRequest,
     symbol_search: SymbolSearch,
+    **kwargs: Any,
 ) -> SearchSymbolResponse:
     """Handle the search_symbol tool invocation.
 

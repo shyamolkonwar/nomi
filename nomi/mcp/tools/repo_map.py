@@ -53,6 +53,7 @@ def get_repo_map_tool_definition() -> Dict[str, Any]:
 async def get_repo_map_tool(
     request: GetRepoMapRequest,
     repo_map_builder: RepoMapBuilder,
+    **kwargs: Any,
 ) -> GetRepoMapResponse:
     """Handle the get_repo_map tool invocation.
 
