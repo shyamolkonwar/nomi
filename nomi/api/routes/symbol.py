@@ -53,7 +53,7 @@ def _convert_search_result_to_symbol_result(result) -> SymbolResult:
 @router.get("/symbol/{name}", response_model=SymbolDetail)
 async def get_symbol_by_name(
     name: str = Path(..., description="Exact symbol name"),
-    symbol_lookup: SymbolLookup = None,
+    symbol_lookup = None,
 ) -> SymbolDetail:
     """Get a symbol by its exact name.
 
@@ -91,7 +91,7 @@ async def get_symbol_by_name(
 @router.post("/symbol/search", response_model=SymbolSearchResponse)
 async def search_symbols(
     request: SymbolSearchRequest,
-    symbol_search: SymbolSearch = None,
+    symbol_search = None,
 ) -> SymbolSearchResponse:
     """Search for symbols using fuzzy matching.
 
@@ -123,7 +123,7 @@ async def search_symbols(
 @router.get("/symbol/file/{file_path:path}", response_model=FileSymbolsResponse)
 async def get_symbols_in_file(
     file_path: str = Path(..., description="Absolute path to source file"),
-    symbol_lookup: SymbolLookup = None,
+    symbol_lookup = None,
 ) -> FileSymbolsResponse:
     """Get all symbols in a specific file.
 
@@ -157,7 +157,7 @@ async def get_symbols_in_file(
 async def search_symbols_by_prefix(
     prefix: str = Path(..., description="Symbol name prefix"),
     limit: Optional[int] = Query(default=10, description="Maximum results to return"),
-    symbol_lookup: SymbolLookup = None,
+    symbol_lookup = None,
 ) -> PrefixSearchResponse:
     """Search for symbols by prefix match.
 

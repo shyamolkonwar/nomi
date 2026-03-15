@@ -183,7 +183,30 @@ class NomiDaemon(LoggerMixin):
 
     def _start_api_server(self) -> None:
         """Start the API server subsystem."""
+        from nomi.api.server import create_api_server, start_server
+        import asyncio
+        
         self.logger.info(f"Starting API server on port {self.config.server_port}...")
+        
+        try:
+            app = create_api_server(
+                symbol_index=self._symbol_index,
+                repo_map_builder=None,  # TODO: add repo map builder
+            )
+            
+            # Run the server in a separate thread
+            import threading
+            def run_server():
+                asyncio.run(start_server(app, port=self.config.server_port))
+            
+            server_thread = threading.Thread(target=run_server, daemon=True)
+            server_thread.start()
+            self._api_server = server_thread
+            
+            self.logger.info(f"API server started on port {self.config.server_port}")
+        except Exception as e:
+            self.logger.error(f"Failed to start API server: {e}")
+            raise
 
     def _start_mcp_server(self) -> None:
         """Start the MCP server subsystem."""

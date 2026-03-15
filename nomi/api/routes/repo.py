@@ -17,7 +17,7 @@ router = APIRouter(tags=["repository"])
 
 @router.get("/repo-map")
 async def get_repository_map(
-    repo_map_builder: RepoMapBuilder = None,
+    repo_map_builder = None,
     max_entries: int = 100,
 ) -> dict:
     """Get the repository map with important symbols.
@@ -89,7 +89,7 @@ async def get_repository_map(
 
 @router.get("/repo/status")
 async def get_indexing_status(
-    symbol_index: SymbolIndex = None,
+    symbol_index = None,
 ) -> dict:
     """Get the current indexing status.
 
@@ -122,7 +122,7 @@ async def get_indexing_status(
 
 @router.post("/repo/index")
 async def trigger_reindexing(
-    symbol_index: SymbolIndex = None,
+    symbol_index = None,
 ) -> dict:
     """Trigger repository re-indexing.
 
@@ -148,8 +148,8 @@ async def trigger_reindexing(
 
 @router.get("/repo/stats")
 async def get_repository_statistics(
-    symbol_index: SymbolIndex = None,
-    repo_map_builder: RepoMapBuilder = None,
+    symbol_index = None,
+    repo_map_builder = None,
 ) -> dict:
     """Get comprehensive repository statistics.
 

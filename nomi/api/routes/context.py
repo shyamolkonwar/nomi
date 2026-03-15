@@ -83,7 +83,7 @@ def _convert_bundle_to_response(bundle, query: str) -> ContextResponse:
 @router.post("/context", response_model=ContextResponse)
 async def build_context(
     request: ContextRequest,
-    context_builder: ContextBuilder,
+    context_builder,
 ) -> ContextResponse:
     """Build context bundle for a natural language query.
 
@@ -116,7 +116,7 @@ async def build_context(
 @router.post("/context/symbol", response_model=ContextResponse)
 async def build_context_for_symbol(
     request: SymbolContextRequest,
-    context_builder: ContextBuilder,
+    context_builder,
 ) -> ContextResponse:
     """Build context bundle for a specific symbol.
 
@@ -149,7 +149,7 @@ async def build_context_for_symbol(
 @router.post("/context/file", response_model=ContextResponse)
 async def build_context_for_file(
     request: FileContextRequest,
-    context_builder: ContextBuilder,
+    context_builder,
 ) -> ContextResponse:
     """Build context bundle for a specific file.
 
@@ -188,7 +188,7 @@ async def build_context_for_file(
 
 @router.get("/context/stats", response_model=ContextStats)
 async def get_context_stats(
-    context_builder: ContextBuilder,
+    context_builder,
 ) -> ContextStats:
     """Get statistics about the context engine.
 
