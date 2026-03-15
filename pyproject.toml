@@ -1,6 +1,6 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "nomi"
@@ -165,5 +165,7 @@ exclude_lines = [
     "if __name__ == .__main__.:",
 ]
 
-[tool.hatch.build.targets.wheel]
-packages = ["nomi", "cli"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["nomi*", "cli*"]
+exclude = ["tests*", "docs*"]
