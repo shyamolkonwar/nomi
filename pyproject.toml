@@ -73,7 +73,7 @@ dev = [
 ]
 
 [project.scripts]
-nomi-context = "cli.main:app"
+nomi = "cli.main:app"
 
 [tool.black]
 line-length = 120
