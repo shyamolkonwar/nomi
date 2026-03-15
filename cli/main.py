@@ -11,7 +11,7 @@ from rich.console import Console
 
 from cli.commands import context, init, search, start, status, stop
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 console = Console()
 

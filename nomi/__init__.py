@@ -5,7 +5,7 @@ developer codebases and AI coding agents. It reduces token usage and
 latency by providing structured code context instead of full files.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __author__ = "Shyamol Konwar"
 __email__ = "shyamol.konwar@gmail.com"
 __license__ = "MIT"
