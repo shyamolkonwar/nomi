@@ -1,0 +1,861 @@
+Below is a **complete technical architecture + implementation documentation for Nomi (MVP)**.
+This is written like an **engineering design document** so you can use it directly for building the project or sharing with contributors.
+
+No code is included — only **architecture, systems design, and build plan**.
+
+---
+
+# Nomi — Architecture & Implementation Documentation
+
+### Context Engine for AI Coding Agents
+
+Version: MVP Architecture
+Project Type: Open-source developer infrastructure
+Goal: Reduce token usage and latency for AI coding agents by providing minimal code context.
+
+---
+
+# 1. Vision
+
+Modern AI coding tools repeatedly send large portions of repositories to LLMs.
+This results in:
+
+* massive token waste
+* slow responses
+* repeated context loading
+* unnecessary API costs
+
+Nomi solves this by acting as a **local context engine**.
+
+Instead of reading files, agents request **structured code units**.
+
+Nomi sits between:
+
+```
+Codebase
+   ↓
+Nomi Context Engine
+   ↓
+Coding Agents
+   ↓
+LLM
+```
+
+The system converts repositories into a **structured graph of code units** and serves minimal context on demand.
+
+---
+
+# 2. Design Principles
+
+The architecture of Nomi follows several strict principles.
+
+### 1. Minimal Context
+
+Always return the smallest amount of code necessary.
+
+### 2. Automatic Operation
+
+After installation, developers should never manually run commands.
+
+### 3. Local Infrastructure
+
+All indexing runs locally.
+
+### 4. Agent Compatibility
+
+Nomi must integrate with:
+
+* CLI coding agents
+* AI IDEs
+* autonomous coding agents
+
+### 5. Language Agnostic
+
+Architecture should support multiple programming languages.
+
+### 6. Incremental Updates
+
+Repository changes must update indexes immediately.
+
+---
+
+# 3. System Overview
+
+Nomi consists of six major subsystems.
+
+```
+Repository Scanner
+        │
+File Watcher
+        │
+Parsing Engine
+        │
+Symbol Index
+        │
+Dependency Graph
+        │
+Context Retrieval Engine
+        │
+MCP Tool Server
+```
+
+Each component performs a specialized role.
+
+---
+
+# 4. Component Architecture
+
+## 4.1 Nomi Daemon
+
+The daemon is the central runtime of the system.
+
+It runs continuously on the developer machine.
+
+Responsibilities:
+
+* initialize repository indexing
+* monitor filesystem changes
+* maintain symbol index
+* maintain dependency graph
+* expose APIs and MCP tools
+
+Startup sequence:
+
+```
+Nomi start
+   ↓
+scan repository
+   ↓
+build symbol index
+   ↓
+build dependency graph
+   ↓
+start API + MCP server
+```
+
+The daemon remains active throughout the development session.
+
+---
+
+# 5. Repository Discovery System
+
+Before parsing begins, the repository must be analyzed.
+
+### Responsibilities
+
+The discovery system:
+
+* scans project directories
+* detects programming languages
+* filters irrelevant directories
+
+### Ignored Directories
+
+```
+.git
+node_modules
+dist
+build
+vendor
+.cache
+```
+
+### File Detection
+
+Each file is categorized by language.
+
+Example:
+
+```
+auth_service.py → Python
+user_controller.ts → TypeScript
+payment.go → Go
+```
+
+Detected files are sent to the parsing pipeline.
+
+---
+
+# 6. File Watcher
+
+The watcher ensures the index always reflects the current repository.
+
+### Responsibilities
+
+Monitor filesystem events:
+
+```
+file created
+file modified
+file deleted
+file renamed
+```
+
+### Workflow
+
+```
+file change detected
+   ↓
+reparse file
+   ↓
+update symbol index
+   ↓
+update dependency graph
+```
+
+This enables **real-time indexing**.
+
+---
+
+# 7. Parsing Engine
+
+## Purpose
+
+The parsing engine converts source code into structured representations.
+
+### Technology
+
+The MVP uses **Tree-sitter**.
+
+Tree-sitter provides:
+
+* incremental parsing
+* multi-language support
+* robust syntax trees
+
+### Parsing Process
+
+```
+source file
+   ↓
+tree-sitter parse
+   ↓
+AST tree
+   ↓
+node extraction
+   ↓
+CodeUnits
+```
+
+---
+
+# 8. CodeUnit Data Model
+
+CodeUnits are the fundamental representation of code.
+
+Each unit represents a semantic component of the program.
+
+Examples:
+
+* functions
+* classes
+* methods
+* interfaces
+
+### CodeUnit Fields
+
+**ID**
+
+Unique identifier:
+
+```
+repository/file_path:symbol_name
+```
+
+**Type**
+
+Possible values:
+
+```
+Function
+Class
+Method
+Interface
+Module
+```
+
+**File Path**
+
+Location of the symbol.
+
+**Line Range**
+
+Start and end lines.
+
+**Signature**
+
+Declaration without body.
+
+Example:
+
+```
+def create_user(email, password)
+```
+
+**Body**
+
+Full implementation.
+
+**Dependencies**
+
+Symbols referenced within the unit.
+
+Example:
+
+```
+create_user
+ ├ UserModel
+ └ hash_password
+```
+
+---
+
+# 9. Symbol Index
+
+The symbol index allows instant lookup of code entities.
+
+### Structure
+
+```
+symbol name → CodeUnit
+```
+
+Example:
+
+```
+create_user → auth/service.py
+```
+
+### Search Types
+
+Supported queries:
+
+* exact symbol match
+* prefix match
+* file scoped lookup
+
+### Storage
+
+The MVP stores the index in **SQLite**.
+
+Reasons:
+
+* lightweight
+* portable
+* fast lookup
+
+---
+
+# 10. Dependency Graph
+
+The dependency graph models relationships between code units.
+
+### Graph Structure
+
+Directed graph.
+
+```
+CodeUnit → CodeUnit
+```
+
+### Edge Types
+
+**CALLS**
+
+```
+function A calls function B
+```
+
+**IMPORTS**
+
+```
+file imports module
+```
+
+**DEFINES**
+
+```
+file defines symbol
+```
+
+**IMPLEMENTS**
+
+```
+class implements interface
+```
+
+### Example Graph
+
+```
+create_user
+   ↓
+hash_password
+   ↓
+crypto_library
+```
+
+---
+
+# 11. Repository Map
+
+The repository map is a compact summary of the codebase.
+
+Purpose:
+
+Allow agents to understand project structure quickly.
+
+### Example Repo Map
+
+```
+Auth Module
+ ├ create_user
+ ├ login_user
+ └ validate_token
+
+Payments
+ ├ charge_card
+ └ refund_payment
+```
+
+The map helps guide agent exploration.
+
+---
+
+# 12. Context Retrieval Engine
+
+This is the core of Nomi.
+
+It converts agent requests into minimal context bundles.
+
+---
+
+## Retrieval Pipeline
+
+### Stage 1 — Query Analysis
+
+The agent query is interpreted.
+
+Example:
+
+```
+Refactor create_user to add validation
+```
+
+Signals extracted:
+
+```
+symbol: create_user
+task: refactor
+```
+
+---
+
+### Stage 2 — Symbol Resolution
+
+The symbol index is searched.
+
+Possible matches are ranked.
+
+Example:
+
+```
+create_user
+create_user_record
+create_user_session
+```
+
+---
+
+### Stage 3 — Dependency Expansion
+
+Graph traversal retrieves dependencies.
+
+Example:
+
+```
+create_user
+   ↓
+hash_password
+UserModel
+validate_email
+```
+
+Traversal depth is limited.
+
+---
+
+### Stage 4 — Context Assembly
+
+Context includes:
+
+* focal symbol
+* immediate dependencies
+* file imports
+
+---
+
+### Stage 5 — Context Compression
+
+To reduce tokens:
+
+Non-focal dependencies are **skeletonized**.
+
+Skeleton format:
+
+```
+function hash_password(password)
+```
+
+Implementation removed.
+
+---
+
+# 13. Context Bundle
+
+The final output is a structured bundle.
+
+### Structure
+
+```
+Task
+Focal Code
+Dependency Skeletons
+Repository Map
+```
+
+Example:
+
+```
+Task:
+Add rate limiting
+
+Focal Code:
+create_user()
+
+Dependencies:
+hash_password()
+UserModel
+```
+
+---
+
+# 14. MCP Integration
+
+Nomi exposes tools via **Model Context Protocol**.
+
+MCP allows agents to call external tools during reasoning.
+
+---
+
+## MCP Server
+
+The daemon runs an MCP server.
+
+Agents connect automatically.
+
+---
+
+## MCP Tools
+
+### get_repo_map
+
+Returns repository structure.
+
+### search_symbol
+
+Find symbols by name.
+
+### get_symbol_context
+
+Return focal code unit.
+
+### expand_dependencies
+
+Return related code units.
+
+### build_context
+
+Return full context bundle.
+
+---
+
+## Example Agent Flow
+
+```
+Agent receives developer query
+   ↓
+call search_symbol
+   ↓
+call get_symbol_context
+   ↓
+call expand_dependencies
+   ↓
+generate code
+```
+
+---
+
+# 15. Local API Server
+
+Nomi exposes a local HTTP API.
+
+### Endpoints
+
+```
+GET /repo-map
+GET /symbol/{name}
+POST /search
+POST /context
+```
+
+### Example Request
+
+```
+POST /context
+{
+ "query": "modify create_user"
+}
+```
+
+### Example Response
+
+```
+create_user()
+hash_password()
+UserModel
+```
+
+---
+
+# 16. Configuration
+
+Nomi stores configuration in a repository file.
+
+```
+.nomi.json
+```
+
+Example:
+
+```
+{
+ "languages": ["python","typescript"],
+ "watch": true,
+ "enable_mcp": true
+}
+```
+
+Agents detect this file automatically.
+
+---
+
+# 17. Installation
+
+Developers install Nomi once.
+
+Example:
+
+```
+pip install nomi
+```
+
+or
+
+```
+npm install -g nomi
+```
+
+### Initialize project
+
+```
+nomi init
+```
+
+### Start daemon
+
+```
+nomi start
+```
+
+The daemon runs in the background.
+
+---
+
+# 18. Runtime Workflow
+
+Developer interacts with coding agent.
+
+Example:
+
+```
+Refactor login logic
+```
+
+Agent workflow:
+
+```
+search_symbol
+   ↓
+get_symbol_context
+   ↓
+expand_dependencies
+   ↓
+generate code
+```
+
+All context comes from Nomi.
+
+---
+
+# 19. Performance Targets
+
+Token Reduction
+
+```
+10x–50x
+```
+
+Context Retrieval Latency
+
+```
+<100 ms
+```
+
+Indexing Speed
+
+```
+10k LOC < 1 second
+```
+
+Incremental Updates
+
+```
+<50 ms per file
+```
+
+---
+
+# 20. Security Considerations
+
+Nomi runs locally.
+
+No code leaves the machine unless the agent sends it.
+
+Security benefits:
+
+* no external indexing
+* no cloud storage
+* private repositories remain local
+
+---
+
+# 21. Future Extensions
+
+After MVP the system can evolve significantly.
+
+### Semantic Code Search
+
+Vector embeddings for queries.
+
+### Program Slicing
+
+Precise dependency extraction.
+
+### IDE Integrations
+
+VSCode plugin.
+
+### Multi-repo Graphs
+
+Large monorepo support.
+
+### Streaming Context
+
+Gradual context delivery to LLM.
+
+---
+
+# 22. MVP Build Plan
+
+### Week 1
+
+Goal: basic context engine.
+
+Day 1
+
+Project scaffolding.
+
+Day 2
+
+Repository scanner.
+
+Day 3
+
+Tree-sitter parsing.
+
+Day 4
+
+CodeUnit extraction.
+
+Day 5
+
+Symbol index.
+
+Day 6
+
+Dependency detection.
+
+Day 7
+
+Basic context builder.
+
+---
+
+### Week 2
+
+Goal: agent integration.
+
+Day 8
+
+Daemon runtime.
+
+Day 9
+
+File watcher.
+
+Day 10
+
+Local API server.
+
+Day 11
+
+MCP tool interface.
+
+Day 12
+
+Repository map.
+
+Day 13
+
+Context compression.
+
+Day 14
+
+Testing and benchmarking.
+
+---
+
+# 23. Summary
+
+Nomi transforms repositories into **structured code graphs**.
+
+By serving minimal code units instead of full files, Nomi enables AI coding agents to operate far more efficiently.
+
+Key benefits:
+
+* massive token reduction
+* faster AI responses
+* automatic integration with coding agents
+* scalable repository reasoning
+
+Nomi becomes the **context infrastructure layer for AI-assisted development**.

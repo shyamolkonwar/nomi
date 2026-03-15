@@ -1,0 +1,650 @@
+For **Nomi**, the folder architecture is extremely important because:
+
+* it must support **multiple languages**
+* it must support **MCP tools**
+* it must support **daemon runtime**
+* it must support **plugins later**
+* contributors must understand it quickly
+
+So the structure should separate **core engine**, **interfaces**, and **extensions**.
+
+Below is a **production-ready architecture that scales from MVP → large project**.
+
+---
+
+# Nomi Folder Architecture
+
+```
+nomi/
+│
+├─ nomi/                     # Main Python package
+│
+│  ├─ core/                  # Core context engine logic
+│  │   ├─ parser/
+│  │   ├─ index/
+│  │   ├─ graph/
+│  │   ├─ context/
+│  │   └─ compression/
+│  │
+│  ├─ daemon/                # Background runtime
+│  │   ├─ runtime/
+│  │   ├─ scheduler/
+│  │   └─ lifecycle/
+│  │
+│  ├─ watcher/               # Filesystem monitoring
+│  │
+│  ├─ discovery/             # Repository scanning
+│  │
+│  ├─ storage/               # Persistence layer
+│  │   ├─ sqlite/
+│  │   └─ cache/
+│  │
+│  ├─ api/                   # Local HTTP API
+│  │   ├─ routes/
+│  │   └─ schemas/
+│  │
+│  ├─ mcp/                   # MCP tool server
+│  │   ├─ tools/
+│  │   ├─ handlers/
+│  │   └─ schemas/
+│  │
+│  ├─ repo_map/              # Repository structure engine
+│  │
+│  ├─ languages/             # Language plugins
+│  │   ├─ python/
+│  │   ├─ typescript/
+│  │   └─ go/
+│  │
+│  ├─ config/                # Configuration system
+│  │
+│  ├─ utils/                 # Shared utilities
+│  │
+│  └─ telemetry/             # Metrics and performance
+│
+├─ cli/                      # CLI entrypoints
+│
+├─ docs/                     # Documentation
+│
+├─ tests/                    # Test suite
+│
+├─ benchmarks/               # Performance tests
+│
+├─ examples/                 # Demo repositories
+│
+├─ scripts/                  # Dev scripts
+│
+├─ pyproject.toml
+├─ README.md
+└─ LICENSE
+```
+
+---
+
+# Detailed Explanation of Each Folder
+
+---
+
+# 1. `nomi/core/`
+
+This is the **heart of the system**.
+
+Everything related to **code context generation** lives here.
+
+```
+core/
+```
+
+### Responsibilities
+
+* AST parsing
+* code unit extraction
+* symbol indexing
+* dependency graph
+* context building
+
+---
+
+## `core/parser/`
+
+Handles **Tree-sitter parsing**.
+
+```
+parser/
+ ├─ engine.py
+ ├─ ast_extractor.py
+ └─ node_mapper.py
+```
+
+Responsibilities:
+
+* load tree-sitter grammars
+* parse files
+* extract AST nodes
+* convert nodes → CodeUnits
+
+---
+
+## `core/index/`
+
+Symbol indexing system.
+
+```
+index/
+ ├─ symbol_index.py
+ ├─ lookup.py
+ └─ search.py
+```
+
+Responsibilities:
+
+* map symbols to code units
+* fast lookup
+* fuzzy symbol matching
+
+---
+
+## `core/graph/`
+
+Dependency graph engine.
+
+```
+graph/
+ ├─ dependency_graph.py
+ ├─ edge_builder.py
+ └─ traversal.py
+```
+
+Responsibilities:
+
+* build call graph
+* detect dependencies
+* perform graph traversal
+
+---
+
+## `core/context/`
+
+Context assembly engine.
+
+```
+context/
+ ├─ context_builder.py
+ ├─ context_bundle.py
+ └─ resolver.py
+```
+
+Responsibilities:
+
+* build minimal context
+* retrieve dependencies
+* assemble final context bundle
+
+---
+
+## `core/compression/`
+
+Token reduction system.
+
+```
+compression/
+ ├─ skeletonizer.py
+ ├─ token_budget.py
+ └─ pruner.py
+```
+
+Responsibilities:
+
+* remove unnecessary code
+* skeletonize dependencies
+* enforce token limits
+
+---
+
+# 2. `nomi/daemon/`
+
+Runs the **background service**.
+
+```
+daemon/
+```
+
+---
+
+## `daemon/runtime/`
+
+Daemon entrypoint.
+
+```
+runtime/
+ ├─ daemon.py
+ └─ startup.py
+```
+
+Responsibilities:
+
+* start daemon
+* initialize subsystems
+
+---
+
+## `daemon/scheduler/`
+
+Background tasks.
+
+```
+scheduler/
+ ├─ indexing.py
+ └─ maintenance.py
+```
+
+Responsibilities:
+
+* schedule indexing
+* manage updates
+
+---
+
+## `daemon/lifecycle/`
+
+Handles startup/shutdown.
+
+```
+lifecycle/
+ ├─ signals.py
+ └─ healthcheck.py
+```
+
+---
+
+# 3. `nomi/watcher/`
+
+File watching system.
+
+```
+watcher/
+ ├─ file_watcher.py
+ └─ change_handler.py
+```
+
+Responsibilities:
+
+* detect file changes
+* trigger incremental parsing
+
+---
+
+# 4. `nomi/discovery/`
+
+Repository scanning.
+
+```
+discovery/
+ ├─ repo_scanner.py
+ └─ language_detector.py
+```
+
+Responsibilities:
+
+* detect source files
+* determine language type
+
+---
+
+# 5. `nomi/storage/`
+
+Persistence layer.
+
+```
+storage/
+```
+
+---
+
+## `storage/sqlite/`
+
+SQLite storage.
+
+```
+sqlite/
+ ├─ schema.py
+ ├─ symbol_store.py
+ └─ graph_store.py
+```
+
+Stores:
+
+* symbol index
+* dependency graph
+
+---
+
+## `storage/cache/`
+
+Caching system.
+
+```
+cache/
+ ├─ memory_cache.py
+ └─ context_cache.py
+```
+
+---
+
+# 6. `nomi/api/`
+
+Local API server.
+
+```
+api/
+```
+
+---
+
+## `api/routes/`
+
+HTTP routes.
+
+```
+routes/
+ ├─ repo.py
+ ├─ symbol.py
+ └─ context.py
+```
+
+---
+
+## `api/schemas/`
+
+Data models.
+
+```
+schemas/
+ ├─ context_schema.py
+ └─ symbol_schema.py
+```
+
+---
+
+# 7. `nomi/mcp/`
+
+Model Context Protocol integration.
+
+```
+mcp/
+```
+
+---
+
+## `mcp/tools/`
+
+Tool definitions.
+
+```
+tools/
+ ├─ repo_map.py
+ ├─ symbol_lookup.py
+ ├─ dependency_expand.py
+ └─ context_builder.py
+```
+
+---
+
+## `mcp/handlers/`
+
+Tool execution.
+
+```
+handlers/
+ ├─ tool_router.py
+ └─ executor.py
+```
+
+---
+
+## `mcp/schemas/`
+
+Input/output schemas.
+
+```
+schemas/
+ ├─ request_schema.py
+ └─ response_schema.py
+```
+
+---
+
+# 8. `nomi/repo_map/`
+
+Repository overview engine.
+
+```
+repo_map/
+ ├─ map_builder.py
+ └─ module_graph.py
+```
+
+Responsibilities:
+
+* build project map
+* summarize structure
+
+---
+
+# 9. `nomi/languages/`
+
+Language plugins.
+
+```
+languages/
+```
+
+Example:
+
+```
+languages/
+ ├─ python/
+ ├─ typescript/
+ └─ go/
+```
+
+Each language plugin defines:
+
+* AST queries
+* dependency detection
+* symbol extraction
+
+---
+
+# 10. `nomi/config/`
+
+Configuration system.
+
+```
+config/
+ ├─ loader.py
+ └─ schema.py
+```
+
+Loads:
+
+```
+.nomi.json
+```
+
+---
+
+# 11. `nomi/utils/`
+
+Shared utilities.
+
+```
+utils/
+ ├─ logger.py
+ ├─ paths.py
+ └─ hashing.py
+```
+
+---
+
+# 12. `nomi/telemetry/`
+
+Performance monitoring.
+
+```
+telemetry/
+ ├─ metrics.py
+ └─ tracing.py
+```
+
+Tracks:
+
+* indexing time
+* retrieval latency
+* token savings
+
+---
+
+# 13. `cli/`
+
+Command line interface.
+
+```
+cli/
+ ├─ main.py
+ ├─ commands/
+ │   ├─ init.py
+ │   ├─ start.py
+ │   └─ status.py
+```
+
+Commands:
+
+```
+nomi init
+nomi start
+nomi status
+```
+
+---
+
+# 14. `tests/`
+
+Unit and integration tests.
+
+```
+tests/
+ ├─ parser/
+ ├─ graph/
+ ├─ context/
+ └─ api/
+```
+
+---
+
+# 15. `benchmarks/`
+
+Performance benchmarks.
+
+```
+benchmarks/
+ ├─ indexing_benchmark.py
+ └─ retrieval_benchmark.py
+```
+
+Used to show:
+
+```
+token reduction
+latency improvements
+```
+
+Important for GitHub traction.
+
+---
+
+# 16. `examples/`
+
+Demo repositories.
+
+```
+examples/
+ ├─ python_project/
+ └─ node_project/
+```
+
+Helps contributors test Nomi quickly.
+
+---
+
+# 17. `scripts/`
+
+Developer tooling.
+
+```
+scripts/
+ ├─ setup_env.sh
+ └─ run_benchmarks.sh
+```
+
+---
+
+# Recommended Total File Structure
+
+```
+nomi/
+ ├ nomi/
+ ├ cli/
+ ├ tests/
+ ├ benchmarks/
+ ├ docs/
+ ├ examples/
+ └ scripts/
+```
+
+---
+
+# Key Architectural Advantages
+
+This structure provides:
+
+### Modularity
+
+Each subsystem is isolated.
+
+### Extensibility
+
+New languages can be added easily.
+
+### Agent Integration
+
+MCP tools are separate.
+
+### Scalability
+
+Future features can be added without refactoring.
+
+---
+
+# One Important Architecture Advice
+
+**Do NOT tightly couple parsing, indexing, and retrieval.**
+
+They must remain separate layers.
+
+Correct layering:
+
+```
+Parser
+↓
+Index
+↓
+Graph
+↓
+Context Engine
+↓
+Agent Tools
+```
+
+If these layers are mixed, the system becomes **impossible to scale later**.
+
+---
