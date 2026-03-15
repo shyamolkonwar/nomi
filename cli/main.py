@@ -9,7 +9,7 @@ import sys
 import typer
 from rich.console import Console
 
-from cli.commands import context, init, search, start, status, stop
+from cli.commands import context, init, mcp, search, start, status, stop
 
 __version__ = "0.1.1"
 
@@ -30,6 +30,7 @@ app.command(name="stop")(stop.stop_command)
 app.command(name="status")(status.status_command)
 app.command(name="search")(search.search_command)
 app.command(name="context")(context.context_command)
+app.command(name="mcp")(mcp.mcp_command)
 
 
 def setup_logging(verbose: bool = False) -> None:

@@ -183,30 +183,52 @@ class NomiDaemon(LoggerMixin):
 
     def _start_api_server(self) -> None:
         """Start the API server subsystem."""
-        from nomi.api.server import create_api_server, start_server
+        from nomi.api.server import create_api_server
         import asyncio
-        
+        import threading
+
         self.logger.info(f"Starting API server on port {self.config.server_port}...")
-        
-        try:
-            app = create_api_server(
-                symbol_index=self._symbol_index,
-                repo_map_builder=None,  # TODO: add repo map builder
-            )
-            
-            # Run the server in a separate thread
-            import threading
-            def run_server():
-                asyncio.run(start_server(app, port=self.config.server_port))
-            
-            server_thread = threading.Thread(target=run_server, daemon=True)
-            server_thread.start()
-            self._api_server = server_thread
-            
-            self.logger.info(f"API server started on port {self.config.server_port}")
-        except Exception as e:
-            self.logger.error(f"Failed to start API server: {e}")
-            raise
+
+        ready_event = threading.Event()
+        error_holder: list[Exception | None] = [None]
+
+        def run_server() -> None:
+            try:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+
+                app = create_api_server(
+                    symbol_index=self._symbol_index,
+                    repo_map_builder=None,
+                )
+
+                import uvicorn
+                config = uvicorn.Config(
+                    app=app,
+                    host="127.0.0.1",
+                    port=self.config.server_port,
+                    log_level="info",
+                )
+                server = uvicorn.Server(config)
+
+                ready_event.set()
+
+                loop.run_until_complete(server.serve())
+            except Exception as e:
+                error_holder[0] = e
+                ready_event.set()
+
+        server_thread = threading.Thread(target=run_server, daemon=True)
+        server_thread.start()
+
+        ready_event.wait(timeout=10.0)
+
+        if error_holder[0] is not None:
+            self.logger.error(f"Failed to start API server: {error_holder[0]}")
+            raise error_holder[0]
+
+        self._api_server = server_thread
+        self.logger.info(f"API server started on port {self.config.server_port}")
 
     def _start_mcp_server(self) -> None:
         """Start the MCP server subsystem."""
