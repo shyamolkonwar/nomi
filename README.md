@@ -204,6 +204,275 @@ nomi context "refactor create_user to add validation"
 # - Token count and timing
 ```
 
+## Testing & Usage Guide
+
+This guide shows you how to test Nomi and integrate it with AI coding agents.
+
+### 1. Installation
+
+On a fresh project or virtual environment:
+
+```bash
+pip install nomi-context
+```
+
+Verify installation:
+
+```bash
+nomi --help
+```
+
+Expected: CLI help should appear with commands (init, start, stop, status, search, context).
+
+### 2. Initialize Nomi in a Repository
+
+Go to any project you want to test:
+
+```bash
+cd my-project
+nomi init
+```
+
+This creates:
+- `.nomi.json` - Configuration file
+- `.nomi/` - Storage directory for indexes
+
+Example config created:
+
+```json
+{
+  "languages": ["python", "typescript"],
+  "watch": true,
+  "enable_mcp": true,
+  "ignore_patterns": [
+    ".git",
+    "node_modules",
+    "dist",
+    "build",
+    "__pycache__",
+    ".venv"
+  ]
+}
+```
+
+### 3. Start the Nomi Daemon
+
+Run:
+
+```bash
+nomi start
+```
+
+This starts:
+- Repository scanner
+- Parser (Tree-sitter)
+- Symbol index
+- Dependency graph builder
+- MCP server
+- Local API server (port 8345)
+
+Expected output:
+
+```
+✓ Nomi daemon started
+  PID: 12345
+  API: http://localhost:8345
+  Health: http://localhost:8345/health
+  MCP: stdio enabled
+
+Indexing:
+  Files: 1,247
+  Symbols: 8,932
+  Duration: 0.8s
+```
+
+Leave this running in the background.
+
+### 4. Verify the Local API
+
+Open your browser or use curl:
+
+```bash
+curl http://localhost:8345/repo-map
+```
+
+Or visit: http://localhost:8345/repo-map
+
+If the server works, it returns JSON describing your repository structure:
+
+```json
+{
+  "modules": [
+    {
+      "name": "auth",
+      "symbols": ["create_user", "login_user", "validate_token"]
+    },
+    {
+      "name": "payments", 
+      "symbols": ["charge_card", "refund_payment"]
+    }
+  ]
+}
+```
+
+This confirms Nomi is running correctly.
+
+### 5. Enable Nomi as an MCP Tool
+
+Connect Nomi to Claude Code or other agents that support MCP.
+
+**For Claude Code:**
+
+Find your Claude config (usually at `~/.config/claude/mcp_servers.json`) and add:
+
+```json
+{
+  "servers": {
+    "nomi": {
+      "command": "nomi",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+This tells Claude Code: when tools are needed, start the Nomi MCP server.
+
+**For Cursor IDE:**
+
+Add to Cursor settings:
+
+```json
+{
+  "mcpServers": {
+    "nomi": {
+      "command": "nomi",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+### 6. Restart Your AI Agent
+
+Restart Claude Code, Cursor, or your agent so it loads the MCP tools.
+
+You should see:
+
+```
+Loaded MCP tools:
+- nomi.get_repo_map
+- nomi.search_symbol
+- nomi.get_symbol_context
+- nomi.expand_dependencies
+```
+
+### 7. Test With a Real Prompt
+
+Ask your agent to refactor something:
+
+```
+Refactor the create_user function to add email validation.
+```
+
+The agent should internally:
+1. Call `nomi.search_symbol("create_user")`
+2. Call `nomi.get_symbol_context("create_user")`
+3. Call `nomi.expand_dependencies("create_user")`
+
+Instead of reading entire files, it gets minimal context.
+
+### 8. Manual API Testing
+
+Test the API directly with curl:
+
+```bash
+# Search symbols
+curl http://localhost:8345/symbol/search \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"query": "create_user", "limit": 5}'
+
+# Get symbol context
+curl http://localhost:8345/context \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"query": "refactor create_user"}'
+
+# Get repository status
+curl http://localhost:8345/repo/status
+```
+
+### 9. Test With Other Agents
+
+Besides Claude Code, Nomi works with:
+- **Cursor IDE** - Add MCP server in settings
+- **Continue** - Add to config.json
+- **OpenCode** - Add to agent configuration
+
+All support MCP-style tools.
+
+### 10. Recommended First Test Repo
+
+Use a simple project for testing:
+
+```
+test-project/
+ ├ auth.py        (create_user, login_user)
+ ├ payments.py    (charge_card, refund)
+ └ main.py        (entry point)
+```
+
+This makes it easy to verify context retrieval.
+
+### 11. Debugging Tips
+
+If the agent doesn't call Nomi:
+
+```bash
+# Check daemon status
+nomi status
+
+# Check logs
+tail -f ~/.nomi/logs/nomi.log
+
+# Test API directly
+curl http://localhost:8345/health
+
+# Restart daemon
+nomi stop
+nomi start
+```
+
+### 12. Benchmark Token Reduction
+
+Measure the improvement:
+
+**Without Nomi:**
+- Agent reads auth.py (2000 lines) = ~8,000 tokens
+
+**With Nomi:**
+- Agent reads create_user + 3 dependencies = ~600 tokens
+
+**Result:** 13x token reduction, faster responses.
+
+### 13. Troubleshooting
+
+**Problem:** `nomi start` fails
+- Check Python version: `python --version` (need 3.11+)
+- Check port 8345 is free: `lsof -i :8345`
+- Check permissions: `ls -la .nomi/`
+
+**Problem:** API returns 500 errors
+- Repository not indexed yet (wait 30 seconds after start)
+- Check daemon logs: `nomi status`
+- Restart daemon: `nomi stop && nomi start`
+
+**Problem:** Agent doesn't use Nomi
+- Verify MCP config is correct
+- Check agent supports MCP tools
+- Restart agent after config change
+
 ## API Usage
 
 ### REST API Endpoints
