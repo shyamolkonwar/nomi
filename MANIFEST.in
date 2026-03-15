@@ -1,0 +1,17 @@
+# Include additional files in the package
+include README.md
+include LICENSE
+include .gitignore
+
+# Include all Python files
+recursive-include nomi *.py
+recursive-include cli *.py
+recursive-include tests *.py
+
+# Include Tree-sitter query files
+recursive-include nomi *.scm
+
+# Exclude unnecessary files
+global-exclude __pycache__
+global-exclude *.py[co]
+global-exclude .DS_Store
